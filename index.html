@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現調レポート</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #18181f;
+  --border: #242430;
+  --accent: #7c6dff;
+  --accent2: #b47dff;
+  --accent-glow: rgba(124,109,255,0.15);
+  --text: #e2e2ee;
+  --text-dim: #666680;
+  --text-muted: #333345;
+  --success: #4ade80;
+  --danger: #f87171;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+.app {
+  position: relative; z-index: 1;
+  max-width: 580px; margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ヘッダー */
+.header {
+  padding: 32px 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+.header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800;
+  letter-spacing: 0.05em; color: #fff;
+}
+.header p { font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; margin-top: 2px; }
+
+/* タブ */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px; padding: 4px;
+  margin-bottom: 28px;
+}
+.tab-btn {
+  flex: 1; background: none; border: none;
+  color: var(--text-dim); font-size: 13px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 10px; border-radius: 9px; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.02em;
+}
+.tab-btn.active {
+  background: var(--surface2); color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* プログレス */
+.progress-wrap { margin-bottom: 32px; }
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.progress-label { font-size: 11px; color: var(--accent); letter-spacing: 0.12em; font-family: 'Syne', sans-serif; }
+.progress-num   { font-size: 11px; color: var(--text-dim); font-family: 'Syne', sans-serif; }
+.progress-bar   { background: var(--surface2); border-radius: 100px; height: 3px; overflow: hidden; }
+.progress-fill  {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ステップ */
+.step { display: none; }
+.step.active { display: block; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.step-q {
+  font-size: 21px; font-weight: 700; color: #fff;
+  margin-bottom: 22px; line-height: 1.4;
+  font-family: 'Syne', sans-serif;
+}
+
+/* 選択ボタン */
+.btn-grid { display: grid; gap: 8px; margin-bottom: 22px; }
+.btn-grid.col2 { grid-template-columns: 1fr 1fr; }
+.btn-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+.choice-btn {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; color: #aaa;
+  font-size: 13px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 16px 10px; cursor: pointer;
+  transition: all 0.18s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.choice-btn:hover { border-color: var(--accent); color: #fff; }
+.choice-btn.selected {
+  border-color: var(--accent); color: var(--accent2);
+  background: linear-gradient(135deg, #1a1830, #1e1538);
+  box-shadow: 0 0 0 1px rgba(124,109,255,0.2), inset 0 0 20px rgba(124,109,255,0.05);
+}
+.choice-btn .icon { font-size: 18px; display: block; margin-bottom: 5px; }
+small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-top: 3px; }
+
+/* テキスト・数値入力 */
+.text-input {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; color: var(--text); font-size: 15px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 15px 16px; margin-bottom: 22px; resize: none; outline: none;
+  transition: border-color 0.2s;
+}
+.text-input:focus { border-color: var(--accent); }
+.text-input::placeholder { color: var(--text-muted); }
+.num-input {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; color: var(--text);
+  font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif;
+  padding: 15px; text-align: center; outline: none;
+  transition: border-color 0.2s;
+}
+.num-input:focus { border-color: var(--accent); }
+.field-label { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 8px; }
+.dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+
+/* ══ フィールドセクション ══ */
+.field-section {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 16px; margin-bottom: 14px;
+}
+.field-section-label {
+  font-size: 11px; font-weight: 700; color: var(--accent2);
+  letter-spacing: 0.12em; margin-bottom: 12px; font-family: 'Syne', sans-serif;
+}
+.inline-count-ctrl {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  padding: 6px 0 10px;
+}
+.inline-count-ctrl .cnt-val { font-size: 28px; min-width: 40px; }
+.sys-limit-note {
+  text-align: center; font-size: 11px; color: var(--text-dim);
+  padding-top: 4px; letter-spacing: 0.05em;
+}
+
+/* デバイスリスト（機器種類＋台数） */
+.device-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.device-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 14px;
+  cursor: pointer; transition: all 0.18s; gap: 8px;
+}
+.device-row:hover { border-color: rgba(124,109,255,0.4); }
+.device-row.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #1a1830, #1e1538);
+}
+.device-row-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.device-icon { font-size: 20px; flex-shrink: 0; }
+.device-name { font-size: 13px; font-weight: 600; color: var(--text-dim); transition: color 0.18s; }
+.device-row.selected .device-name { color: var(--accent2); }
+.device-count-ctrl {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  opacity: 0; pointer-events: none; transition: opacity 0.18s;
+}
+.device-row.selected .device-count-ctrl { opacity: 1; pointer-events: all; }
+.device-cnt { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; min-width: 24px; text-align: center; }
+
+/* カメラ合計行 */
+.cam-total-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 4px 2px;
+  font-size: 12px; color: var(--text-dim);
+  border-top: 1px solid var(--border); margin-top: 6px;
+}
+.cam-total-num {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: #fff;
+}
+.cam-total-status { font-size: 11px; margin-left: 4px; }
+.cam-total-status.ok   { color: var(--success); }
+.cam-total-status.warn { color: #fb923c; }
+.cam-total-status.err  { color: var(--danger); }
+
+/* エラーメッセージ */
+.error-msg {
+  background: rgba(248,113,113,0.1); border: 1.5px solid rgba(248,113,113,0.3);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
+  font-size: 13px; color: var(--danger); line-height: 1.6;
+}
+
+/* アームメソッドリスト */
+.arm-methods-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.arm-method-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px;
+  transition: border-color 0.15s;
+}
+.arm-method-row.active { border-color: var(--accent); background: rgba(124,109,255,0.05); }
+.arm-method-label { font-size: 13px; color: var(--text-dim); }
+.arm-method-row.active .arm-method-label { color: var(--accent2); }
+.arm-method-ctrl { display: flex; align-items: center; gap: 8px; }
+.arm-method-cnt {
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+  color: #fff; min-width: 22px; text-align: center;
+}
+.arm-sub-total {
+  font-size: 11px; color: var(--text-dim); text-align: right;
+  padding-top: 6px; border-top: 1px solid var(--border); margin-top: 4px;
+  font-family: 'Syne', sans-serif;
+}
+.arm-sub-total span { color: var(--accent2); font-weight: 700; font-size: 13px; }
+.cnt-btn.sm { width: 26px; height: 26px; font-size: 14px; border-radius: 7px; }
+.arm-status-bar {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 13px; padding: 12px 16px; margin-bottom: 14px;
+}
+.arm-status-inner {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-dim);
+}
+.arm-status-num { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: #fff; }
+.arm-status-num.accent { color: var(--accent2); }
+.arm-status-sep { font-size: 16px; color: var(--border); }
+.arm-status-badge {
+  margin-left: auto; font-size: 12px; padding: 3px 10px;
+  border-radius: 100px; font-weight: 600;
+}
+.arm-status-badge.ok   { background: rgba(74,222,128,0.12); color: var(--success); border: 1px solid rgba(74,222,128,0.25); }
+.arm-status-badge.warn { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+
+/* トグル */
+.toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.toggle-btn {
+  flex: 1; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; color: var(--text-dim); font-size: 14px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 14px; cursor: pointer; transition: all 0.18s;
+}
+.toggle-btn.selected { border-color: var(--accent); color: var(--accent2); background: #1a1830; }
+
+/* ナビ */
+.next-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 14px; color: #fff;
+  font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif;
+  padding: 17px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em;
+  box-shadow: 0 4px 20px rgba(124,109,255,0.3);
+}
+.next-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,109,255,0.4); }
+.next-btn:disabled { opacity: 0.25; cursor: default; transform: none; box-shadow: none; }
+.back-btn {
+  background: none; border: none; color: var(--text-dim); font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer; display: block; text-align: center;
+  width: 100%; padding: 12px; margin-top: 8px; transition: color 0.2s;
+}
+.back-btn:hover { color: var(--text); }
+
+/* ══ 日付ピッカー ══ */
+.date-picker-wrap {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.date-nav-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.date-nav-btn {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text-dim);
+  width: 36px; height: 36px; font-size: 16px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center;
+}
+.date-nav-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.date-month-label {
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #fff;
+  cursor: pointer; padding: 4px 12px; border-radius: 8px; transition: background 0.18s;
+}
+.date-month-label:hover { background: var(--surface2); }
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px; padding: 10px 10px 14px;
+}
+.cal-head {
+  text-align: center; font-size: 10px; font-family: 'Syne', sans-serif;
+  color: var(--text-dim); padding: 6px 0; letter-spacing: 0.06em;
+}
+.cal-day {
+  text-align: center; font-size: 13px; font-family: 'Syne', sans-serif;
+  padding: 8px 4px; border-radius: 9px; cursor: pointer;
+  color: var(--text-dim); transition: all 0.15s; font-weight: 600;
+}
+.cal-day:hover:not(.empty):not(.selected-day) { background: var(--surface2); color: #fff; }
+.cal-day.today { color: var(--accent2); }
+.cal-day.selected-day {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; box-shadow: 0 2px 10px rgba(124,109,255,0.4);
+}
+.cal-day.empty { cursor: default; }
+.cal-day.sun { color: #f87171; }
+.cal-day.sat { color: #60a5fa; }
+.cal-day.selected-day.sun, .cal-day.selected-day.sat { color: #fff; }
+
+/* スクロールピッカー */
+.scroll-picker-wrap {
+  display: none;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+}
+.scroll-picker-wrap.open { display: flex; gap: 8px; }
+.scroll-col { flex: 1; position: relative; }
+.scroll-col-label {
+  text-align: center; font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.1em; margin-bottom: 6px;
+}
+.scroll-list {
+  height: 140px; overflow-y: auto; scroll-snap-type: y mandatory;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  scrollbar-width: none;
+}
+.scroll-list::-webkit-scrollbar { display: none; }
+.scroll-item {
+  height: 40px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+  color: var(--text-dim); scroll-snap-align: center; cursor: pointer;
+  transition: all 0.15s;
+}
+.scroll-item:hover { color: #fff; background: var(--surface2); }
+.scroll-item.active { color: var(--accent2); background: rgba(124,109,255,0.1); }
+.scroll-highlight {
+  position: absolute; top: 50%; left: 0; right: 0;
+  height: 40px; transform: translateY(-50%);
+  border-top: 1px solid rgba(124,109,255,0.25);
+  border-bottom: 1px solid rgba(124,109,255,0.25);
+  pointer-events: none;
+}
+.date-display-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+}
+.date-display-val {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff;
+}
+.date-display-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.scroll-toggle-btn {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 9px; color: var(--text-dim); font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 6px 12px; cursor: pointer; transition: all 0.18s;
+}
+.scroll-toggle-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ══ カメラ種類・台数 ══ */
+.camera-count-section {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+.camera-count-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.camera-count-row:last-child { border-bottom: none; padding-bottom: 0; }
+.camera-count-row:first-child { padding-top: 0; }
+.camera-count-label {
+  font-size: 13px; font-weight: 500; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.camera-count-ctrl {
+  display: flex; align-items: center; gap: 10px;
+}
+.cnt-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text-dim); font-size: 18px; font-weight: 700;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.cnt-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.cnt-val {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+  color: #fff; min-width: 28px; text-align: center;
+}
+
+/* ══ アーム種類選択 ══ */
+.arm-section { margin-bottom: 22px; }
+.arm-type-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.arm-type-card.selected { border-color: var(--accent); }
+.arm-type-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer;
+}
+.arm-type-name {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.arm-check {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.18s; flex-shrink: 0;
+}
+.arm-type-card.selected .arm-check {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.arm-sub-section {
+  display: none; padding: 0 16px 14px; border-top: 1px solid var(--border);
+}
+.arm-type-card.selected .arm-sub-section { display: block; }
+.arm-sub-label { font-size: 11px; color: var(--text-dim); margin: 12px 0 8px; letter-spacing: 0.1em; }
+.arm-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+.arm-sub-btn {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text-dim); font-size: 12px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 10px; cursor: pointer; transition: all 0.18s; text-align: center;
+}
+.arm-sub-btn:hover { border-color: var(--accent); color: #fff; }
+.arm-sub-btn.selected {
+  border-color: var(--accent); color: var(--accent2);
+  background: rgba(124,109,255,0.1);
+}
+
+/* 結果パネル */
+.result-panel { display: none; }
+.result-panel.active { display: block; animation: slideUp 0.3s ease; }
+.result-head { text-align: center; padding: 16px 0 24px; }
+.result-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 100px; padding: 8px 16px;
+  font-size: 13px; color: var(--success); margin-bottom: 14px;
+}
+.result-head h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #fff; }
+.result-head p { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+.result-box {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 20px; margin-bottom: 14px;
+  font-size: 12.5px; line-height: 2; color: #c0c0d8;
+  white-space: pre-wrap; font-family: 'SF Mono','Menlo',monospace;
+  max-height: 320px; overflow-y: auto;
+}
+.action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.act-btn {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 13px; color: var(--text); font-size: 13px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 14px 10px; cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.act-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.act-btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent; color: #fff;
+  box-shadow: 0 4px 16px rgba(124,109,255,0.3);
+}
+.act-btn.primary:hover { transform: translateY(-1px); }
+.reset-btn {
+  width: 100%; background: none; border: 1.5px solid var(--border);
+  border-radius: 13px; color: var(--text-dim); font-size: 13px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 14px; cursor: pointer; transition: all 0.2s; margin-top: 10px;
+}
+.reset-btn:hover { border-color: #555; color: var(--text); }
+
+/* ══ 保存一覧 ══ */
+.list-panel { display: none; }
+.list-panel.active { display: block; animation: slideUp 0.3s ease; }
+.list-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.list-toolbar-btns { display: flex; gap: 8px; }
+.export-btn, .delete-all-btn {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text-dim); font-size: 12px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 9px 16px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.export-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.delete-all-btn:hover { border-color: var(--danger); color: var(--danger); }
+.list-empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-dim); font-size: 14px; line-height: 2.2;
+}
+.list-empty .em { font-size: 36px; margin-bottom: 12px; }
+.report-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 18px; padding: 18px 20px; margin-bottom: 10px;
+  cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.report-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  opacity: 0; transition: opacity 0.2s;
+}
+.report-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(124,109,255,0.12); }
+.report-card:hover::before { opacity: 1; }
+.report-card-inner { display: flex; justify-content: space-between; align-items: flex-start; }
+.rc-date {
+  font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em;
+  font-family: 'Syne', sans-serif; margin-bottom: 5px;
+}
+.rc-title {
+  font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 8px;
+  font-family: 'Syne', sans-serif; line-height: 1.3;
+}
+.rc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 8px; font-size: 10px; color: var(--text-dim);
+}
+.tag.koji { border-color: rgba(124,109,255,0.3); color: var(--accent2); background: rgba(124,109,255,0.08); }
+.card-actions {
+  display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; margin-left: 10px;
+}
+.card-act-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-dim); font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 6px 10px; cursor: pointer; transition: all 0.2s; text-align: center;
+  white-space: nowrap;
+}
+.card-act-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.card-act-btn.del:hover { border-color: var(--danger); color: var(--danger); }
+
+/* モーダル */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 100;
+  align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 580px;
+  padding: 24px 20px 44px;
+  animation: slideModal 0.3s cubic-bezier(.4,0,.2,1);
+  max-height: 85vh; overflow-y: auto;
+}
+@keyframes slideModal { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-drag { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+  color: #fff; margin-bottom: 14px;
+}
+.modal-body {
+  font-size: 12px; color: #aaa; white-space: pre-wrap;
+  line-height: 1.9; font-family: 'SF Mono','Menlo',monospace;
+  max-height: 300px; overflow-y: auto;
+  background: var(--bg); border-radius: 12px; padding: 16px; margin-bottom: 16px;
+}
+.modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.modal-act {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 12px; color: var(--text-dim); font-size: 13px; font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 13px; cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.modal-act:hover { border-color: var(--accent); color: var(--accent2); }
+.modal-act.accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent; color: #fff;
+}
+.modal-close {
+  width: 100%; background: none; border: 1.5px solid var(--border);
+  border-radius: 12px; color: var(--text-dim); font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 13px; cursor: pointer; transition: all 0.2s;
+}
+.modal-close:hover { border-color: #555; color: var(--text); }
+
+/* 確認ダイアログ */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); z-index: 200;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 20px;
+  width: calc(100% - 40px); max-width: 340px;
+  padding: 28px 24px;
+  animation: popIn 0.2s ease;
+}
+@keyframes popIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+.confirm-icon { font-size: 32px; text-align: center; margin-bottom: 14px; }
+.confirm-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 8px; }
+.confirm-msg { font-size: 12px; color: var(--text-dim); text-align: center; line-height: 1.7; margin-bottom: 20px; }
+.confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.confirm-btn {
+  border-radius: 12px; font-size: 13px; font-weight: 600;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 13px; cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.confirm-btn.cancel {
+  background: none; border: 1.5px solid var(--border); color: var(--text-dim);
+}
+.confirm-btn.cancel:hover { border-color: #555; color: var(--text); }
+.confirm-btn.danger {
+  background: var(--danger); border: none; color: #fff;
+  box-shadow: 0 4px 14px rgba(248,113,113,0.3);
+}
+.confirm-btn.danger:hover { transform: translateY(-1px); }
+
+/* トースト */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: var(--accent); color: #fff;
+  padding: 11px 22px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; font-family: 'Syne', sans-serif;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1); z-index: 300;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.green { background: #16a34a; }
+.toast.red   { background: #dc2626; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">🔍</div>
+      <div>
+        <h1>現調レポート</h1>
+        <p>SITE SURVEY REPORT</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabInput" onclick="switchTab('input')">✏️ 入力</button>
+    <button class="tab-btn"        id="tabList"  onclick="switchTab('list')">📋 保存済み <span id="savedCount"></span></button>
+  </div>
+
+  <!-- ══ 入力タブ ══ -->
+  <div id="inputTab">
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-info">
+        <span class="progress-label">SURVEY INPUT</span>
+        <span class="progress-num" id="progressNum">01 / 14</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <div id="stepsContainer">
+
+      <!-- Step 1: 現場名 -->
+      <div class="step active" data-step="1">
+        <div class="step-q">現場名を入力してください</div>
+        <input type="text" class="text-input" id="siteName" placeholder="例）新宿センタービル B1F" style="margin-bottom:22px;">
+        <button class="next-btn" onclick="nextStep()">次へ →</button>
+      </div>
+
+      <!-- Step 2: 作業日 -->
+      <div class="step" data-step="2">
+        <div class="step-q">作業日はいつですか？</div>
+        <div class="date-picker-wrap">
+          <div class="date-nav-row">
+            <button class="date-nav-btn" onclick="calPrevMonth()">‹</button>
+            <div class="date-month-label" id="calMonthLabel" onclick="toggleScrollPicker()"></div>
+            <button class="date-nav-btn" onclick="calNextMonth()">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="date-display-row">
+            <div>
+              <div class="date-display-val" id="dateDisplayVal">未選択</div>
+              <div class="date-display-sub" id="dateDisplaySub"></div>
+            </div>
+            <button class="scroll-toggle-btn" onclick="toggleScrollPicker()" id="scrollToggleBtn">▼ スクロール</button>
+          </div>
+          <div class="scroll-picker-wrap" id="scrollPickerWrap">
+            <div class="scroll-col">
+              <div class="scroll-col-label">年</div>
+              <div class="scroll-list" id="yearScroll"></div>
+            </div>
+            <div class="scroll-col">
+              <div class="scroll-col-label">月</div>
+              <div class="scroll-list" id="monthScroll"></div>
+            </div>
+            <div class="scroll-col">
+              <div class="scroll-col-label">日</div>
+              <div class="scroll-list" id="dayScroll"></div>
+            </div>
+          </div>
+        </div>
+        <button class="next-btn" onclick="nextStep()">次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 3: 時間帯 -->
+      <div class="step" data-step="3">
+        <div class="step-q">作業時間帯は？</div>
+        <div class="btn-grid col2">
+          <button class="choice-btn" onclick="pick(this,'timeZone','日中')"><span class="icon">☀️</span>日中</button>
+          <button class="choice-btn" onclick="pick(this,'timeZone','夜間')"><span class="icon">🌙</span>夜間</button>
+        </div>
+        <button class="next-btn" id="next3" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 4: 工事内容 -->
+      <div class="step" data-step="4">
+        <div class="step-q">工事内容は？</div>
+        <div class="btn-grid">
+          <button class="choice-btn" onclick="pick(this,'kojiType','仮設（設置＆撤去）')">
+            <span class="icon">🔄</span>仮設<small class="sub">設置＆撤去セット</small>
+          </button>
+          <button class="choice-btn" onclick="pick(this,'kojiType','設置')"><span class="icon">🔧</span>設置</button>
+          <button class="choice-btn" onclick="pick(this,'kojiType','撤去')"><span class="icon">🗑️</span>撤去</button>
+        </div>
+        <button class="next-btn" id="next4" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 5: 環境 -->
+      <div class="step" data-step="5">
+        <div class="step-q">工事場所の環境は？</div>
+        <div class="btn-grid col2">
+          <button class="choice-btn" onclick="pick(this,'location','屋内')"><span class="icon">🏠</span>屋内</button>
+          <button class="choice-btn" onclick="pick(this,'location','屋外')"><span class="icon">🌤️</span>屋外</button>
+        </div>
+        <button class="next-btn" id="next5" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 6: 施工箇所 -->
+      <div class="step" data-step="6">
+        <div class="step-q">施工箇所を入力してください</div>
+        <textarea class="text-input" id="sekouSho" rows="2" placeholder="例）B1F 駐車場エントランス付近"></textarea>
+        <button class="next-btn" onclick="nextStep()">次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 7: システム台数＋カメラ種類・台数（統合） -->
+      <div class="step" data-step="7">
+        <div class="step-q">システム・機器の設定</div>
+
+        <!-- システム台数 -->
+        <div class="field-section">
+          <div class="field-section-label">🖥 システム台数</div>
+          <div class="inline-count-ctrl">
+            <button class="cnt-btn" onclick="sysCountChange(-1)">−</button>
+            <div class="cnt-val" id="sysCountVal">1</div>
+            <button class="cnt-btn" onclick="sysCountChange(1)">＋</button>
+          </div>
+          <div class="sys-limit-note" id="sysLimitNote">最大 <span id="sysMaxCam">3</span> 台まで接続可能</div>
+        </div>
+
+        <!-- カメラ種類＋台数 -->
+        <div class="field-section" style="margin-top:18px;">
+          <div class="field-section-label">📷 機器の種類と台数 <span style="font-size:11px;font-weight:400;color:var(--text-dim);">複数選択可</span></div>
+          <div class="device-list" id="deviceList"></div>
+          <div id="camTotalRow" class="cam-total-row" style="display:none;">
+            合計 <span id="camTotalVal" class="cam-total-num">0</span> 台
+            <span id="camTotalStatus" class="cam-total-status"></span>
+          </div>
+        </div>
+
+        <textarea class="text-input" id="cameraTypeOther" rows="1" placeholder="その他・詳細（任意）" style="margin-top:4px;"></textarea>
+        <div id="sysErrorMsg" class="error-msg" style="display:none;"></div>
+        <button class="next-btn" id="next7" onclick="tryNextStep7()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 8は削除済み（Step7→Step9に直接遷移） -->
+
+      <!-- Step 9: アーム（サブ種別ごとに台数管理） -->
+      <div class="step" data-step="9">
+        <div class="step-q">カメラアームの設定<br><small style="font-size:13px;color:var(--text-dim);font-family:'Noto Sans JP';">合計台数はカメラ台数と一致させてください</small></div>
+
+        <!-- 合計ステータスバー -->
+        <div class="arm-status-bar" id="armStatusBar">
+          <div class="arm-status-inner">
+            <span class="arm-status-label">アーム合計</span>
+            <span id="armAssignedNum" class="arm-status-num">0</span>
+            <span class="arm-status-sep">/</span>
+            <span id="armTotalNum" class="arm-status-num accent">0</span>
+            <span class="arm-status-label">台</span>
+            <span id="armStatusBadge" class="arm-status-badge"></span>
+          </div>
+        </div>
+
+        <div class="arm-section" id="armSection">
+
+          <!-- 壁付けアーム -->
+          <div class="arm-type-card" id="armCard_wall">
+            <div class="arm-type-header" onclick="toggleArm('wall')">
+              <div class="arm-type-name"><span>🔩</span> 壁付けアーム</div>
+              <div class="arm-check" id="armCheck_wall"></div>
+            </div>
+            <div class="arm-sub-section" id="armSub_wall">
+              <div class="arm-sub-label">取付方法と台数（複数組み合わせ可）</div>
+              <div class="arm-methods-list" id="armMethods_wall">
+                <div class="arm-method-row" data-arm="wall" data-method="マグネット">
+                  <div class="arm-method-label">🧲 マグネット</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','マグネット',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_wall_マグネット">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','マグネット',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="wall" data-method="ビス留">
+                  <div class="arm-method-label">🔩 ビス留</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','ビス留',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_wall_ビス留">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','ビス留',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="wall" data-method="ボックス">
+                  <div class="arm-method-label">📦 ボックス</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','ボックス',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_wall_ボックス">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','ボックス',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="wall" data-method="加工必要">
+                  <div class="arm-method-label">🔨 加工必要</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','加工必要',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_wall_加工必要">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('wall','加工必要',1)">＋</button>
+                  </div>
+                </div>
+              </div>
+              <div class="arm-sub-total">壁付け 合計: <span id="armSubTotal_wall">0</span> 台</div>
+            </div>
+          </div>
+
+          <!-- ポールマウント -->
+          <div class="arm-type-card" id="armCard_pole">
+            <div class="arm-type-header" onclick="toggleArm('pole')">
+              <div class="arm-type-name"><span>🏗️</span> ポールマウント</div>
+              <div class="arm-check" id="armCheck_pole"></div>
+            </div>
+            <div class="arm-sub-section" id="armSub_pole">
+              <div class="arm-sub-label">台数</div>
+              <div class="camera-count-ctrl" onclick="event.stopPropagation()">
+                <button class="cnt-btn" id="armMinus_pole" onclick="armCntChange('pole',-1)">−</button>
+                <div class="cnt-val" id="armCnt_pole">0</div>
+                <button class="cnt-btn" id="armPlus_pole" onclick="armCntChange('pole',1)">＋</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 天井吊り下げ -->
+          <div class="arm-type-card" id="armCard_ceil">
+            <div class="arm-type-header" onclick="toggleArm('ceil')">
+              <div class="arm-type-name"><span>⬆️</span> 天井吊り下げ</div>
+              <div class="arm-check" id="armCheck_ceil"></div>
+            </div>
+            <div class="arm-sub-section" id="armSub_ceil">
+              <div class="arm-sub-label">取付方法と台数（複数組み合わせ可）</div>
+              <div class="arm-methods-list" id="armMethods_ceil">
+                <div class="arm-method-row" data-arm="ceil" data-method="全ねじ">
+                  <div class="arm-method-label">🔗 全ねじ</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','全ねじ',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_ceil_全ねじ">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','全ねじ',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="ceil" data-method="マグネット">
+                  <div class="arm-method-label">🧲 マグネット</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','マグネット',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_ceil_マグネット">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','マグネット',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="ceil" data-method="ビス留">
+                  <div class="arm-method-label">🔩 ビス留</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','ビス留',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_ceil_ビス留">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','ビス留',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="ceil" data-method="ボックス">
+                  <div class="arm-method-label">📦 ボックス</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','ボックス',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_ceil_ボックス">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','ボックス',1)">＋</button>
+                  </div>
+                </div>
+                <div class="arm-method-row" data-arm="ceil" data-method="加工必要">
+                  <div class="arm-method-label">🔨 加工必要</div>
+                  <div class="arm-method-ctrl" onclick="event.stopPropagation()">
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','加工必要',-1)">−</button>
+                    <div class="arm-method-cnt" id="armMC_ceil_加工必要">0</div>
+                    <button class="cnt-btn sm" onclick="armMethodCntChange('ceil','加工必要',1)">＋</button>
+                  </div>
+                </div>
+              </div>
+              <div class="arm-sub-total">天井 合計: <span id="armSubTotal_ceil">0</span> 台</div>
+            </div>
+          </div>
+
+          <!-- アームなし -->
+          <div class="arm-type-card" id="armCard_none">
+            <div class="arm-type-header" onclick="toggleArm('none')">
+              <div class="arm-type-name"><span>🚫</span> アームなし</div>
+              <div class="arm-check" id="armCheck_none"></div>
+            </div>
+            <div class="arm-sub-section" id="armSub_none">
+              <div class="arm-sub-label">台数（カメラ残数から自動計算）</div>
+              <div class="camera-count-ctrl" onclick="event.stopPropagation()">
+                <button class="cnt-btn" id="armMinus_none" onclick="armCntChange('none',-1)">−</button>
+                <div class="cnt-val" id="armCnt_none">0</div>
+                <button class="cnt-btn" id="armPlus_none" onclick="armCntChange('none',1)">＋</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="next-btn" id="next9" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="goBackFrom9()">← 戻る</button>
+      </div>
+
+      <!-- Step 10: 配線方法 -->
+      <div class="step" data-step="10">
+        <div class="step-q">配線方法は？</div>
+        <div class="btn-grid col3">
+          <button class="choice-btn" onclick="pick(this,'wiring','露出')"><span class="icon">〰️</span>露出</button>
+          <button class="choice-btn" onclick="pick(this,'wiring','配管')"><span class="icon">🔲</span>配管</button>
+          <button class="choice-btn" onclick="pick(this,'wiring','天井内')"><span class="icon">🏗️</span>天井内</button>
+        </div>
+        <button class="next-btn" id="next10" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 11: 作業人数・時間 -->
+      <div class="step" data-step="11">
+        <div class="step-q">作業人数と予想時間</div>
+        <div class="dual-grid">
+          <div><div class="field-label">作業人数（名）</div><input type="number" class="num-input" id="workerCount" min="1" value="2"></div>
+          <div><div class="field-label">予想時間（時間）</div><input type="number" class="num-input" id="workHours" min="0.5" step="0.5" value="3"></div>
+        </div>
+        <button class="next-btn" onclick="nextStep()">次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 12: LANケーブル -->
+      <div class="step" data-step="12">
+        <div class="step-q">LANケーブルと配線支持材</div>
+        <div class="field-label">LANケーブル長さ（m）</div>
+        <div class="inline-count-ctrl" style="margin-bottom:20px;">
+          <button class="cnt-btn" onclick="lanCntChange(-5)">−</button>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <div class="cnt-val" id="lanLengthVal" style="font-size:28px;min-width:52px;">10</div>
+            <span style="font-size:13px;color:var(--text-dim);">m</span>
+          </div>
+          <button class="cnt-btn" onclick="lanCntChange(5)">＋</button>
+        </div>
+        <input type="hidden" id="lanLength" value="10">
+        <div class="field-label">配線支持材</div>
+        <textarea class="text-input" id="wireSupport" rows="1" placeholder="例）モール、インシュロック、ステープル等"></textarea>
+        <button class="next-btn" onclick="nextStep()">次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 13: 高所作業 -->
+      <div class="step" data-step="13">
+        <div class="step-q">高所作業はありますか？</div>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="kosoNone" onclick="toggleKoso('none')">🚶 なし</button>
+          <button class="toggle-btn" id="kosoYes"  onclick="toggleKoso('yes')">🪜 あり</button>
+        </div>
+        <div id="kosoDetail" style="display:none;margin-bottom:16px;">
+          <div class="field-label">作業高さ（m）</div>
+          <input type="number" class="num-input" id="kosoHeight" min="0" step="0.5" placeholder="例）3.5">
+        </div>
+        <div style="height:16px;"></div>
+        <button class="next-btn" id="next13" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 14: 特別条件 -->
+      <div class="step" data-step="14">
+        <div class="step-q">その他特別条件はありますか？</div>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="tokNone" onclick="toggleToku('none')">✅ なし</button>
+          <button class="toggle-btn" id="tokYes"  onclick="toggleToku('yes')">📝 あり</button>
+        </div>
+        <div id="tokuDetail" style="display:none;">
+          <textarea class="text-input" id="tokuText" rows="3" placeholder="例）電源工事が別途必要、養生必須、入館証要など"></textarea>
+        </div>
+        <div style="height:16px;"></div>
+        <button class="next-btn" id="next14" onclick="generateReport()" disabled>レポートを生成 ✨</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+    </div>
+
+    <!-- 結果パネル -->
+    <div class="result-panel" id="resultPanel">
+      <div class="result-head">
+        <div class="result-badge">✅ 現調レポート完成</div>
+        <h2 id="resultTitle">現調レポート</h2>
+        <p>コピー・保存・ファイル書き出しができます</p>
+      </div>
+      <div class="result-box" id="resultBox"></div>
+      <div class="action-row">
+        <button class="act-btn primary" onclick="copyReport()">📋 コピー</button>
+        <button class="act-btn" onclick="saveReport()">💾 アプリ内保存</button>
+      </div>
+      <button class="act-btn" style="width:100%;margin-bottom:10px;" onclick="downloadSingle()">⬇️ このレポートをファイルに書き出す</button>
+      <button class="reset-btn" onclick="resetAll()">🔄 新しい現調を入力</button>
+    </div>
+  </div>
+
+  <!-- ══ 保存一覧タブ ══ -->
+  <div id="listTab" class="list-panel">
+    <div class="list-toolbar">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;color:var(--text-dim);letter-spacing:0.08em;" id="listCountLabel"></div>
+      <div class="list-toolbar-btns">
+        <button class="export-btn" onclick="exportAll()">⬇️ 全件書き出し</button>
+        <button class="delete-all-btn" onclick="confirmDeleteAll()">🗑️ 全件削除</button>
+      </div>
+    </div>
+    <div id="listContent"></div>
+  </div>
+
+</div>
+
+<!-- モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-drag"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body"  id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="modal-act accent" onclick="copyModalReport()">📋 コピー</button>
+      <button class="modal-act"        onclick="downloadModal()">⬇️ ファイル書き出し</button>
+    </div>
+    <button class="modal-close" onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- 確認ダイアログ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" onclick="closeConfirm()">キャンセル</button>
+      <button class="confirm-btn danger" id="confirmOkBtn">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// 定数・状態
+// ══════════════════════════════════════
+const TOTAL = 14;
+const DEVICE_DEFS = [
+  { key: 'IPカメラ',     icon: '📷' },
+  { key: 'ステレオカメラ', icon: '📸' },
+  { key: 'サイネージ',   icon: '🖥️' },
+  { key: 'Lidar',       icon: '📡' },
+  { key: 'AirKnock',    icon: '💨' },
+];
+
+let step = 1, d = {}, kosoMode = null, tokuMode = null, currentReport = null, modalReport = null;
+d.systemCount  = 1;
+d.cameraCounts = {}; // { 'IPカメラ': 2, ... }
+d.armData      = {}; // { wall:{sub,count}, ceil:{sub,count}, pole:{count}, none:{count} }
+
+// ══════════════════════════════════════
+// カレンダー
+// ══════════════════════════════════════
+const today = new Date();
+let calYear = today.getFullYear(), calMonth = today.getMonth();
+let selectedDate = null;
+let scrollPickerOpen = false;
+
+const WEEKDAYS = ['日','月','火','水','木','金','土'];
+const MONTHS_JA = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function buildCalendar() {
+  document.getElementById('calMonthLabel').textContent = calYear + '年 ' + MONTHS_JA[calMonth];
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = WEEKDAYS.map((w,i) =>
+    `<div class="cal-head${i===0?' sun':i===6?' sat':''}">${w}</div>`
+  ).join('');
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days  = new Date(calYear, calMonth+1, 0).getDate();
+  for (let i = 0; i < first; i++) grid.innerHTML += '<div class="cal-day empty"></div>';
+  for (let dd = 1; dd <= days; dd++) {
+    const dow = (first + dd - 1) % 7;
+    const isToday = (calYear===today.getFullYear() && calMonth===today.getMonth() && dd===today.getDate());
+    const isSel   = selectedDate && (calYear===selectedDate.y && calMonth===selectedDate.m && dd===selectedDate.d);
+    const cls = ['cal-day',
+      dow===0?'sun':dow===6?'sat':'',
+      isToday&&!isSel?'today':'',
+      isSel?'selected-day':''
+    ].filter(Boolean).join(' ');
+    grid.innerHTML += `<div class="${cls}" onclick="selectCalDay(${dd})">${dd}</div>`;
+  }
+}
+function selectCalDay(day) {
+  selectedDate = { y: calYear, m: calMonth, d: day };
+  buildCalendar(); updateDateDisplay(); syncScrollToDate();
+}
+function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} buildCalendar(); }
+function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} buildCalendar(); }
+
+function updateDateDisplay() {
+  if (!selectedDate) return;
+  const sd = selectedDate;
+  const dt = new Date(sd.y, sd.m, sd.d);
+  const wds = ['日','月','火','水','木','金','土'];
+  document.getElementById('dateDisplayVal').textContent = sd.y + '年 ' + (sd.m+1) + '月 ' + sd.d + '日';
+  document.getElementById('dateDisplaySub').textContent = '（' + wds[dt.getDay()] + '曜日）';
+}
+function getSelectedDateStr() {
+  if (!selectedDate) return '未選択';
+  const { y, m, d } = selectedDate;
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+function getSelectedDateFileStr() {
+  if (!selectedDate) return 'nodate';
+  const { y, m, d } = selectedDate;
+  return y + '_' + String(m+1).padStart(2,'0') + '_' + String(d).padStart(2,'0');
+}
+
+function buildScrollPicker() {
+  const yl = document.getElementById('yearScroll');
+  const ml = document.getElementById('monthScroll');
+  const y0 = today.getFullYear() - 1, y1 = today.getFullYear() + 2;
+  yl.innerHTML = '';
+  for (let y = y0; y <= y1; y++) {
+    const el = document.createElement('div');
+    el.className = 'scroll-item'; el.textContent = y + '年'; el.dataset.val = y;
+    el.onclick = () => { scrollPickYear(y); };
+    yl.appendChild(el);
+  }
+  ml.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const el = document.createElement('div');
+    el.className = 'scroll-item'; el.textContent = m + '月'; el.dataset.val = m-1;
+    el.onclick = () => { scrollPickMonth(m-1); };
+    ml.appendChild(el);
+  }
+  updateDayScroll();
+}
+function updateDayScroll() {
+  const dl = document.getElementById('dayScroll');
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  dl.innerHTML = '';
+  for (let dd = 1; dd <= days; dd++) {
+    const el = document.createElement('div');
+    el.className = 'scroll-item'; el.textContent = dd + '日'; el.dataset.val = dd;
+    el.onclick = () => { selectCalDay(dd); };
+    dl.appendChild(el);
+  }
+  highlightScrollItems();
+}
+function highlightScrollItems() {
+  document.querySelectorAll('#yearScroll .scroll-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.val)===calYear));
+  document.querySelectorAll('#monthScroll .scroll-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.val)===calMonth));
+  document.querySelectorAll('#dayScroll .scroll-item').forEach(el => el.classList.toggle('active', selectedDate && parseInt(el.dataset.val)===selectedDate.d));
+}
+function scrollPickYear(y) { calYear = y; buildCalendar(); updateDayScroll(); highlightScrollItems(); }
+function scrollPickMonth(m) { calMonth = m; buildCalendar(); updateDayScroll(); highlightScrollItems(); }
+function syncScrollToDate() {
+  highlightScrollItems();
+  ['yearScroll','monthScroll','dayScroll'].forEach(id => {
+    const el = document.getElementById(id);
+    const active = el.querySelector('.active');
+    if (active) el.scrollTop = active.offsetTop - el.offsetHeight/2 + active.offsetHeight/2;
+  });
+}
+function toggleScrollPicker() {
+  scrollPickerOpen = !scrollPickerOpen;
+  const wrap = document.getElementById('scrollPickerWrap');
+  const btn  = document.getElementById('scrollToggleBtn');
+  wrap.classList.toggle('open', scrollPickerOpen);
+  btn.textContent = scrollPickerOpen ? '▲ カレンダー' : '▼ スクロール';
+  if (scrollPickerOpen) { buildScrollPicker(); syncScrollToDate(); }
+}
+
+// ══════════════════════════════════════
+// ステップ管理
+// ══════════════════════════════════════
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((step-1)/TOTAL*100) + '%';
+  document.getElementById('progressNum').textContent = String(step).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
+}
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  const t = document.querySelector('[data-step="'+n+'"]');
+  if (t) t.classList.add('active');
+  updateProgress();
+  if (n === 7) buildDeviceList();
+  if (n === 9) initArmStep();
+}
+// step8は存在しない（スキップ番号）
+const SKIP_STEPS = new Set([8]);
+function nextStep() {
+  let n = step + 1;
+  while (SKIP_STEPS.has(n)) n++;
+  if (n <= TOTAL) { step = n; showStep(step); }
+}
+function prevStep() {
+  let n = step - 1;
+  while (SKIP_STEPS.has(n)) n--;
+  if (n >= 1) { step = n; showStep(step); }
+}
+function goBackFrom9() {
+  // step9の戻るはstep7へ直接
+  step = 7; showStep(step);
+}
+
+function pick(btn, key, val) {
+  btn.closest('.btn-grid').querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  d[key] = val;
+  const nb = document.getElementById('next'+step);
+  if (nb) nb.disabled = false;
+}
+
+// ══════════════════════════════════════
+// システム台数
+// ══════════════════════════════════════
+function sysCountChange(delta) {
+  d.systemCount = Math.max(1, (d.systemCount||1) + delta);
+  document.getElementById('sysCountVal').textContent = d.systemCount;
+  document.getElementById('sysMaxCam').textContent = d.systemCount * 3;
+  updateCameraTotal(); // 上限チェック更新
+}
+
+// ══════════════════════════════════════
+// デバイスリスト（Step7）
+// ══════════════════════════════════════
+function buildDeviceList() {
+  const list = document.getElementById('deviceList');
+  list.innerHTML = DEVICE_DEFS.map(({ key, icon }) => {
+    if (!d.cameraCounts[key]) d.cameraCounts[key] = 0;
+    const sel = d.cameraCounts[key] > 0;
+    return `
+    <div class="device-row${sel?' selected':''}" id="devRow_${key.replace(/\s/g,'_')}" onclick="toggleDevice('${key}')">
+      <div class="device-row-left">
+        <div class="device-icon">${icon}</div>
+        <div class="device-name">${key}</div>
+      </div>
+      <div class="device-count-ctrl" onclick="event.stopPropagation()">
+        <button class="cnt-btn" onclick="devCntChange('${key}',-1)">−</button>
+        <div class="device-cnt" id="devCnt_${key.replace(/\s/g,'_')}">${d.cameraCounts[key]||0}</div>
+        <button class="cnt-btn" onclick="devCntChange('${key}',1)">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateCameraTotal();
+}
+
+function toggleDevice(key) {
+  const id = key.replace(/\s/g,'_');
+  const row = document.getElementById('devRow_'+id);
+  if (!row) return;
+  const isSel = row.classList.contains('selected');
+  if (isSel) {
+    // 解除：台数0に
+    d.cameraCounts[key] = 0;
+    row.classList.remove('selected');
+    document.getElementById('devCnt_'+id).textContent = 0;
+  } else {
+    // 選択：台数1に
+    d.cameraCounts[key] = 1;
+    row.classList.add('selected');
+    document.getElementById('devCnt_'+id).textContent = 1;
+  }
+  updateCameraTotal();
+}
+
+function devCntChange(key, delta) {
+  const id = key.replace(/\s/g,'_');
+  const row = document.getElementById('devRow_'+id);
+  const cur = d.cameraCounts[key] || 0;
+  const max = (d.systemCount||1) * 3;
+  const totalOther = getTotalCameras() - cur;
+  // 増やす場合：合計がmax超えないように
+  let next = cur + delta;
+  if (next < 0) next = 0;
+  if (delta > 0 && totalOther + next > max) {
+    showToast('システム上限（' + max + '台）に達しています', 'red');
+    return;
+  }
+  d.cameraCounts[key] = next;
+  if (next === 0) row && row.classList.remove('selected');
+  else row && row.classList.add('selected');
+  document.getElementById('devCnt_'+id).textContent = next;
+  updateCameraTotal();
+}
+
+function getTotalCameras() {
+  return DEVICE_DEFS.reduce((s, { key }) => s + (d.cameraCounts[key]||0), 0);
+}
+
+function updateCameraTotal() {
+  const total = getTotalCameras();
+  const max   = (d.systemCount||1) * 3;
+  const row   = document.getElementById('camTotalRow');
+  const numEl = document.getElementById('camTotalVal');
+  const stEl  = document.getElementById('camTotalStatus');
+  const next7 = document.getElementById('next7');
+  const errEl = document.getElementById('sysErrorMsg');
+
+  if (total === 0) {
+    if (row) row.style.display = 'none';
+    if (next7) next7.disabled = true;
+    if (errEl) errEl.style.display = 'none';
+    return;
+  }
+  if (row) row.style.display = 'flex';
+  if (numEl) numEl.textContent = total;
+
+  if (total > max) {
+    if (stEl) { stEl.className = 'cam-total-status err'; stEl.textContent = '⚠ システム台数（' + max + '台）を超えています'; }
+    if (next7) next7.disabled = true;
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'システム ' + (d.systemCount||1) + '台（最大 ' + max + '台）に対して、カメラ合計が ' + total + '台あります。\nシステム台数を増やすか、カメラ台数を減らしてください。';
+    }
+  } else {
+    if (stEl) { stEl.className = 'cam-total-status ok'; stEl.textContent = '✓ OK'; }
+    if (next7) next7.disabled = false;
+    if (errEl) errEl.style.display = 'none';
+  }
+}
+
+function tryNextStep7() {
+  const total = getTotalCameras();
+  const max   = (d.systemCount||1) * 3;
+  if (total === 0) { showToast('機器を1台以上選択してください', 'red'); return; }
+  if (total > max) { showToast('カメラ台数がシステム上限を超えています', 'red'); return; }
+  // step8をスキップしてstep9へ
+  step = 9; showStep(step);
+}
+
+// ══════════════════════════════════════
+// アームステップ（Step9）
+// データ構造: d.armData = {
+//   wall: { methods: { 'マグネット':2, 'ビス留':1 } },
+//   pole: { count: 2 },
+//   ceil: { methods: { '全ねじ':1 } },
+//   none: { count: 1 }
+// }
+// ══════════════════════════════════════
+function initArmStep() {
+  const camTotal = getTotalCameras();
+  document.getElementById('armTotalNum').textContent = camTotal;
+  // 既存データをUIに反映
+  ['wall','pole','ceil','none'].forEach(k => {
+    const card  = document.getElementById('armCard_'+k);
+    const check = document.getElementById('armCheck_'+k);
+    const sub   = document.getElementById('armSub_'+k);
+    if (!card) return;
+    const hasDat = !!d.armData[k];
+    card.classList.toggle('selected', hasDat);
+    check.textContent = hasDat ? '✓' : '';
+    if (sub) sub.style.display = hasDat ? 'block' : 'none';
+  });
+  // メソッドカウント復元
+  ['wall','ceil'].forEach(armKey => {
+    if (d.armData[armKey] && d.armData[armKey].methods) {
+      Object.entries(d.armData[armKey].methods).forEach(([method, cnt]) => {
+        const el = document.getElementById('armMC_'+armKey+'_'+method);
+        if (el) { el.textContent = cnt; updateMethodRowStyle(armKey, method, cnt); }
+      });
+      updateArmSubTotal(armKey);
+    }
+  });
+  ['pole','none'].forEach(armKey => {
+    if (d.armData[armKey]) {
+      const el = document.getElementById('armCnt_'+armKey);
+      if (el) el.textContent = d.armData[armKey].count || 0;
+    }
+  });
+  updateArmStatus();
+}
+
+function getArmAssigned() {
+  let total = 0;
+  if (d.armData.wall) {
+    Object.values(d.armData.wall.methods||{}).forEach(c => { total += c; });
+  }
+  if (d.armData.ceil) {
+    Object.values(d.armData.ceil.methods||{}).forEach(c => { total += c; });
+  }
+  if (d.armData.pole) total += d.armData.pole.count || 0;
+  if (d.armData.none) total += d.armData.none.count || 0;
+  return total;
+}
+
+function getArmSubTotal(armKey) {
+  if (!d.armData[armKey]) return 0;
+  if (armKey === 'pole' || armKey === 'none') return d.armData[armKey].count || 0;
+  return Object.values(d.armData[armKey].methods||{}).reduce((s,c) => s+c, 0);
+}
+
+function updateArmSubTotal(armKey) {
+  const el = document.getElementById('armSubTotal_'+armKey);
+  if (el) el.textContent = getArmSubTotal(armKey);
+}
+
+function updateMethodRowStyle(armKey, method, cnt) {
+  const rows = document.querySelectorAll(`#armMethods_${armKey} .arm-method-row`);
+  rows.forEach(row => {
+    if (row.dataset.method === method) {
+      row.classList.toggle('active', cnt > 0);
+    }
+  });
+}
+
+function updateArmStatus() {
+  const camTotal  = getTotalCameras();
+  const assigned  = getArmAssigned();
+  const remaining = camTotal - assigned;
+
+  document.getElementById('armAssignedNum').textContent = assigned;
+  document.getElementById('armTotalNum').textContent    = camTotal;
+
+  const badge = document.getElementById('armStatusBadge');
+  const next9 = document.getElementById('next9');
+  if (assigned === camTotal && camTotal > 0) {
+    badge.className = 'arm-status-badge ok'; badge.textContent = '✓ 完了';
+    if (next9) next9.disabled = false;
+  } else {
+    badge.className = 'arm-status-badge warn';
+    badge.textContent = remaining > 0 ? '残り ' + remaining + ' 台' : '超過 ' + Math.abs(remaining) + ' 台';
+    if (next9) next9.disabled = true;
+  }
+}
+
+function toggleArm(key) {
+  const card  = document.getElementById('armCard_'+key);
+  const check = document.getElementById('armCheck_'+key);
+  const sub   = document.getElementById('armSub_'+key);
+  const isSel = card.classList.contains('selected');
+
+  if (!isSel) {
+    card.classList.add('selected');
+    check.textContent = '✓';
+    if (sub) sub.style.display = 'block';
+    // 初期化
+    if (!d.armData[key]) {
+      if (key === 'wall' || key === 'ceil') {
+        d.armData[key] = { methods: {} };
+      } else {
+        // none: 残り台数を自動セット
+        const remain = Math.max(0, getTotalCameras() - getArmAssigned());
+        d.armData[key] = { count: key === 'none' ? remain : 0 };
+        const cntEl = document.getElementById('armCnt_'+key);
+        if (cntEl) cntEl.textContent = d.armData[key].count;
+      }
+    }
+  } else {
+    card.classList.remove('selected');
+    check.textContent = '';
+    if (sub) sub.style.display = 'none';
+    delete d.armData[key];
+    // UIリセット
+    if (key === 'wall' || key === 'ceil') {
+      document.querySelectorAll(`#armMethods_${key} .arm-method-cnt`).forEach(el => el.textContent = '0');
+      document.querySelectorAll(`#armMethods_${key} .arm-method-row`).forEach(el => el.classList.remove('active'));
+      const stEl = document.getElementById('armSubTotal_'+key);
+      if (stEl) stEl.textContent = '0';
+    } else {
+      const cntEl = document.getElementById('armCnt_'+key);
+      if (cntEl) cntEl.textContent = '0';
+    }
+  }
+  updateArmStatus();
+}
+
+// 壁付け・天井: サブ種別ごとの台数変更
+function armMethodCntChange(armKey, method, delta) {
+  if (!d.armData[armKey]) return;
+  const camTotal = getTotalCameras();
+  const assigned = getArmAssigned();
+  const cur      = (d.armData[armKey].methods || {})[method] || 0;
+  let next = cur + delta;
+  if (next < 0) next = 0;
+  if (delta > 0 && (assigned - cur + next) > camTotal) {
+    showToast('カメラ台数（' + camTotal + '台）を超えて割り当てできません', 'red');
+    return;
+  }
+  if (!d.armData[armKey].methods) d.armData[armKey].methods = {};
+  d.armData[armKey].methods[method] = next;
+  const el = document.getElementById('armMC_'+armKey+'_'+method);
+  if (el) el.textContent = next;
+  updateMethodRowStyle(armKey, method, next);
+  updateArmSubTotal(armKey);
+  updateArmStatus();
+}
+
+// ポール・なし: シンプルな台数変更
+function armCntChange(armKey, delta) {
+  if (!d.armData[armKey]) return;
+  const camTotal = getTotalCameras();
+  const assigned = getArmAssigned();
+  const cur      = d.armData[armKey].count || 0;
+  let next = cur + delta;
+  if (next < 0) next = 0;
+  if (delta > 0 && (assigned - cur + next) > camTotal) {
+    showToast('カメラ台数（' + camTotal + '台）を超えて割り当てできません', 'red');
+    return;
+  }
+  d.armData[armKey].count = next;
+  const el = document.getElementById('armCnt_'+armKey);
+  if (el) el.textContent = next;
+  updateArmStatus();
+}
+
+// LANケーブル長さ（5m刻み、最小0）
+function lanCntChange(delta) {
+  const el  = document.getElementById('lanLength');
+  const disp = document.getElementById('lanLengthVal');
+  let val = parseInt(el.value) || 0;
+  val = Math.max(0, val + delta);
+  el.value = val;
+  disp.textContent = val;
+}
+
+function toggleKoso(mode) {
+  kosoMode = mode;
+  document.getElementById('kosoNone').classList.toggle('selected', mode==='none');
+  document.getElementById('kosoYes').classList.toggle('selected',  mode==='yes');
+  document.getElementById('kosoDetail').style.display = mode==='yes' ? 'block' : 'none';
+  document.getElementById('next13').disabled = false;
+}
+function toggleToku(mode) {
+  tokuMode = mode;
+  document.getElementById('tokNone').classList.toggle('selected', mode==='none');
+  document.getElementById('tokYes').classList.toggle('selected',  mode==='yes');
+  document.getElementById('tokuDetail').style.display = mode==='yes' ? 'block' : 'none';
+  document.getElementById('next14').disabled = false;
+}
+
+// ══════════════════════════════════════
+// レポート生成
+// ══════════════════════════════════════
+function buildArmText(armData) {
+  if (!armData || Object.keys(armData).length === 0) return 'アーム　　：未設定';
+  const nameMap = { wall:'壁付けアーム', pole:'ポールマウント', ceil:'天井吊り下げ', none:'アームなし' };
+  const lines = [];
+  // wall
+  if (armData.wall && armData.wall.methods) {
+    const entries = Object.entries(armData.wall.methods).filter(([,c])=>c>0);
+    if (entries.length) {
+      entries.forEach(([m,c]) => lines.push('アーム　　：壁付けアーム（' + m + '） × ' + c + '台'));
+    }
+  }
+  // ceil
+  if (armData.ceil && armData.ceil.methods) {
+    const entries = Object.entries(armData.ceil.methods).filter(([,c])=>c>0);
+    if (entries.length) {
+      entries.forEach(([m,c]) => lines.push('アーム　　：天井吊り下げ（' + m + '） × ' + c + '台'));
+    }
+  }
+  // pole
+  if (armData.pole && armData.pole.count > 0) {
+    lines.push('アーム　　：ポールマウント × ' + armData.pole.count + '台');
+  }
+  // none
+  if (armData.none && armData.none.count > 0) {
+    lines.push('アーム　　：アームなし × ' + armData.none.count + '台');
+  }
+  return lines.length ? lines.join('\n') : 'アーム　　：未設定';
+}
+
+function buildCameraText(counts, other) {
+  const lines = DEVICE_DEFS
+    .filter(({ key }) => (counts[key]||0) > 0)
+    .map(({ key }) => `　 ${key}：${counts[key]}台`);
+  if (other) lines.push('　 その他：' + other);
+  return lines.length ? lines.join('\n') : '　 未選択';
+}
+
+function buildText(r) {
+  return `━━━━━━━━━━━━━━━━━━━━━━
+　現調レポート
+　作成日：${r.createdAt}
+━━━━━━━━━━━━━━━━━━━━━━
+
+【基本情報】
+現場名　　：${r.siteName}
+作業日　　：${r.workDate}
+時間帯　　：${r.timeZone}
+工事内容　：${r.kojiType}
+工事場所　：${r.location}
+施工箇所　：${r.sekouSho}
+
+【機器情報】
+システム台数：${r.systemCount}台（最大${r.systemCount*3}台接続可）
+カメラ種類・台数：
+${r.cameraText}
+${r.armText}
+
+【配線・工事】
+配線方法　：${r.wiring}
+LANケーブル：${r.lanLength}m
+配線支持材　：${r.wireSupport || '未記入'}
+
+【作業計画】
+作業人数　：${r.workerCount}名
+予想時間　：${r.workHours}時間
+${r.kosoLine}
+
+【備考】
+${r.tokuLine}
+
+━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+function generateReport() {
+  let kosoLine = '高所作業　：なし';
+  if (kosoMode === 'yes') {
+    const h = document.getElementById('kosoHeight').value;
+    kosoLine = '高所作業　：あり（' + (h ? h+'m' : '高さ未入力') + '）';
+  }
+  let tokuLine = 'なし';
+  if (tokuMode === 'yes') tokuLine = document.getElementById('tokuText').value || '詳細未入力';
+
+  const cameraCounts    = Object.assign({}, d.cameraCounts);
+  const cameraTypeOther = document.getElementById('cameraTypeOther').value;
+
+  currentReport = {
+    id:           Date.now(),
+    createdAt:    new Date().toLocaleDateString('ja-JP'),
+    siteName:     document.getElementById('siteName').value || '未入力',
+    workDate:     getSelectedDateStr(),
+    workDateFile: getSelectedDateFileStr(),
+    timeZone:     d.timeZone || '未選択',
+    kojiType:     d.kojiType || '未選択',
+    location:     d.location || '未選択',
+    sekouSho:     document.getElementById('sekouSho').value || '未入力',
+    systemCount:  d.systemCount || 1,
+    cameraCounts, cameraTypeOther,
+    cameraText:   buildCameraText(cameraCounts, cameraTypeOther),
+    armData:      JSON.parse(JSON.stringify(d.armData||{})),
+    armText:      buildArmText(d.armData),
+    wiring:       d.wiring || '未選択',
+    lanLength:    document.getElementById('lanLength').value,
+    wireSupport:  document.getElementById('wireSupport').value,
+    workerCount:  document.getElementById('workerCount').value,
+    workHours:    document.getElementById('workHours').value,
+    kosoLine, tokuLine
+  };
+
+  document.getElementById('resultTitle').textContent =
+    currentReport.workDate + ' — ' + currentReport.siteName;
+  document.getElementById('resultBox').textContent = buildText(currentReport);
+
+  document.getElementById('stepsContainer').style.display = 'none';
+  document.getElementById('progressWrap').style.display   = 'none';
+  document.getElementById('resultPanel').classList.add('active');
+}
+
+// ══════════════════════════════════════
+// コピー・保存・ダウンロード
+// ══════════════════════════════════════
+function copyText(text) {
+  // Clipboard API が使える環境（HTTPS等）
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('コピーしました！', 'green'))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    const ok = document.execCommand('copy');
+    showToast(ok ? 'コピーしました！' : 'コピーに失敗しました', ok ? 'green' : 'red');
+  } catch(e) {
+    showToast('コピーに失敗しました', 'red');
+  }
+  document.body.removeChild(ta);
+}
+function copyReport() {
+  copyText(buildText(currentReport));
+}
+function copyModalReport() {
+  if (!modalReport) return;
+  copyText(buildText(modalReport));
+}
+function saveReport() {
+  if (!currentReport) return;
+  const list = getSaved();
+  if (list.find(r => r.id === currentReport.id)) { showToast('すでに保存済みです'); return; }
+  list.unshift(currentReport);
+  setSaved(list);
+  updateBadge();
+  showToast('アプリ内に保存しました！', 'green');
+}
+function getFileName(r) {
+  const sn = (r.siteName || '現場').replace(/[\\\/:\*\?"<>\|]/g,'_');
+  return r.workDateFile + '_' + sn + '.txt';
+}
+function downloadSingle() {
+  if (!currentReport) return;
+  dl(buildText(currentReport), getFileName(currentReport));
+  showToast('ファイルを書き出しました！', 'green');
+}
+function exportAll() {
+  const list = getSaved();
+  if (!list.length) { showToast('保存済みデータがありません', 'red'); return; }
+  const text = list.map(r => buildText(r)).join('\n\n' + '═'.repeat(40) + '\n\n');
+  const today = new Date();
+  const fname = today.getFullYear()+'_'+String(today.getMonth()+1).padStart(2,'0')+'_'+String(today.getDate()).padStart(2,'0')+'_現調レポート全件.txt';
+  dl(text, fname);
+  showToast('全' + list.length + '件を書き出しました！', 'green');
+}
+function dl(text, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ══════════════════════════════════════
+// ローカルストレージ
+// ══════════════════════════════════════
+function getSaved() { try { return JSON.parse(localStorage.getItem('gencho_v4')) || []; } catch { return []; } }
+function setSaved(list) { localStorage.setItem('gencho_v4', JSON.stringify(list)); }
+function deleteSaved(id) {
+  setSaved(getSaved().filter(r => r.id !== id));
+  updateBadge(); renderList();
+  showToast('削除しました', 'red');
+}
+function deleteAllSaved() {
+  setSaved([]);
+  updateBadge(); renderList();
+  showToast('全件削除しました', 'red');
+}
+function updateBadge() {
+  const n = getSaved().length;
+  document.getElementById('savedCount').textContent = n ? '(' + n + ')' : '';
+}
+
+// ══════════════════════════════════════
+// 確認ダイアログ
+// ══════════════════════════════════════
+let confirmCallback = null;
+function showConfirm(icon, title, msg, cb) {
+  document.getElementById('confirmIcon').textContent = icon;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  confirmCallback = cb;
+  document.getElementById('confirmOverlay').classList.add('active');
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); cb(); };
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  confirmCallback = null;
+}
+function confirmDeleteOne(id, name) {
+  showConfirm('🗑️', '削除しますか？', name + '\nこの操作は取り消せません。', () => deleteSaved(id));
+}
+function confirmDeleteAll() {
+  const n = getSaved().length;
+  if (!n) { showToast('保存済みデータがありません', 'red'); return; }
+  showConfirm('⚠️', '全件削除しますか？', n + '件のレポートをすべて削除します。\nこの操作は取り消せません。', () => deleteAllSaved());
+}
+
+// ══════════════════════════════════════
+// 保存一覧レンダリング
+// ══════════════════════════════════════
+function formatDateLabel(r) {
+  // workDate: yyyy-mm-dd or yyyy-m-d
+  const raw = r.workDate || '';
+  if (!raw || raw === '未選択') return '日付未定';
+  const parts = raw.split('-');
+  if (parts.length === 3) {
+    return parts[0] + '.' + parts[1].padStart(2,'0') + '.' + parts[2].padStart(2,'0');
+  }
+  return raw;
+}
+function renderList() {
+  const list = getSaved();
+  const lbl = document.getElementById('listCountLabel');
+  lbl.textContent = list.length ? list.length + ' 件のレポート' : '';
+  const el = document.getElementById('listContent');
+  if (!list.length) {
+    el.innerHTML = `<div class="list-empty"><div class="em">📂</div><div>保存済みレポートはありません</div><div style="font-size:12px;margin-top:8px;color:#444;">入力後「アプリ内保存」を押すと<br>ここに表示されます</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(r => {
+    const dateLabel = formatDateLabel(r);
+    const title = r.siteName || '現場名未入力';
+    return `
+    <div class="report-card" onclick="openModal(${r.id})">
+      <div class="report-card-inner">
+        <div style="flex:1;min-width:0;">
+          <div class="rc-date">${dateLabel}　作成：${r.createdAt}</div>
+          <div class="rc-title">${title}</div>
+          <div class="rc-tags">
+            <span class="tag koji">${r.kojiType||''}</span>
+            <span class="tag">${r.location||''}</span>
+            <span class="tag">${r.timeZone||''}</span>
+            ${Object.entries(r.cameraCounts||{}).filter(([,v])=>v>0).map(([k])=>`<span class="tag">${k}</span>`).join('')}
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="card-act-btn" onclick="event.stopPropagation();downloadFromList(${r.id})">⬇️ 書出</button>
+          <button class="card-act-btn del" onclick="event.stopPropagation();confirmDeleteOne(${r.id},'${(title).replace(/'/g,'')}')">🗑️ 削除</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function downloadFromList(id) {
+  const r = getSaved().find(x => x.id === id);
+  if (!r) return;
+  dl(buildText(r), getFileName(r));
+  showToast('ファイルを書き出しました！', 'green');
+}
+
+// ══════════════════════════════════════
+// モーダル
+// ══════════════════════════════════════
+function openModal(id) {
+  modalReport = getSaved().find(r => r.id === id);
+  if (!modalReport) return;
+  document.getElementById('modalTitle').textContent = formatDateLabel(modalReport) + '　' + (modalReport.siteName||'');
+  document.getElementById('modalBody').textContent  = buildText(modalReport);
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('active');
+}
+function downloadModal() {
+  if (!modalReport) return;
+  dl(buildText(modalReport), getFileName(modalReport));
+  showToast('ファイルを書き出しました！', 'green');
+}
+
+// ══════════════════════════════════════
+// リセット・タブ
+// ══════════════════════════════════════
+function resetAll() {
+  d = { systemCount:1, cameraCounts:{}, armData:{} };
+  kosoMode = null; tokuMode = null; step = 1; currentReport = null;
+  selectedDate = null; calYear = today.getFullYear(); calMonth = today.getMonth();
+  scrollPickerOpen = false;
+  document.getElementById('scrollPickerWrap').classList.remove('open');
+  document.getElementById('scrollToggleBtn').textContent = '▼ スクロール';
+  document.getElementById('stepsContainer').style.display = 'block';
+  document.getElementById('progressWrap').style.display   = 'block';
+  document.getElementById('resultPanel').classList.remove('active');
+  document.querySelectorAll('.choice-btn,.toggle-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.next-btn[id]').forEach(b => b.disabled = true);
+  document.getElementById('kosoDetail').style.display = 'none';
+  document.getElementById('tokuDetail').style.display = 'none';
+  document.getElementById('dateDisplayVal').textContent = '未選択';
+  document.getElementById('dateDisplaySub').textContent = '';
+  document.getElementById('sysCountVal').textContent = '1';
+  document.getElementById('sysMaxCam').textContent = '3';
+  // アームUIリセット
+  ['wall','pole','ceil','none'].forEach(k => {
+    const card  = document.getElementById('armCard_'+k);
+    const check = document.getElementById('armCheck_'+k);
+    const sub   = document.getElementById('armSub_'+k);
+    if (card)  card.classList.remove('selected');
+    if (check) check.textContent = '';
+    if (sub)   sub.style.display = 'none';
+  });
+  // メソッドカウントリセット
+  document.querySelectorAll('.arm-method-cnt').forEach(el => el.textContent = '0');
+  document.querySelectorAll('.arm-method-row').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.arm-sub-total span').forEach(el => el.textContent = '0');
+  document.querySelectorAll('#armCnt_pole, #armCnt_none').forEach(el => el.textContent = '0');
+  buildCalendar();
+  showStep(1);
+}
+function switchTab(tab) {
+  document.getElementById('tabInput').classList.toggle('active', tab==='input');
+  document.getElementById('tabList').classList.toggle('active',  tab==='list');
+  document.getElementById('inputTab').style.display = tab==='input' ? 'block' : 'none';
+  document.getElementById('listTab').classList.toggle('active',  tab==='list');
+  document.getElementById('listTab').style.display = tab==='list' ? 'block' : 'none';
+  if (tab === 'list') renderList();
+}
+
+// ══════════════════════════════════════
+// トースト
+// ══════════════════════════════════════
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type==='green' ? ' green' : type==='red' ? ' red' : '');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ══════════════════════════════════════
+// 初期化
+// ══════════════════════════════════════
+d.systemCount  = 1;
+d.cameraCounts = {};
+d.armData      = {};
+buildCalendar();
+updateProgress();
+updateBadge();
+document.getElementById('listTab').style.display = 'none';
+
+// ══ Enterキーで次へ（テキスト・数値入力時のみ・IME変換中は無視） ══
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  // IME変換確定中（isComposing=true）は無視
+  if (e.isComposing || e.keyCode === 229) return;
+  const tag = document.activeElement && document.activeElement.tagName;
+  // textareaはshift+enterで改行、enterで次へ
+  if (tag === 'TEXTAREA') {
+    if (!e.shiftKey) { e.preventDefault(); advanceFromCurrentStep(); }
+    return;
+  }
+  // input[type=text/number/date]
+  if (tag === 'INPUT') {
+    e.preventDefault(); advanceFromCurrentStep();
+  }
+});
+
+function advanceFromCurrentStep() {
+  // 各ステップの「次へ」相当の処理を呼ぶ
+  if (step === 7) { tryNextStep7(); return; }
+  const nb = document.getElementById('next'+step);
+  if (nb && !nb.disabled) nb.click();
+  else if (!nb) {
+    // nextN がない（制約なし）ステップ
+    const activeStep = document.querySelector('.step.active');
+    const btn = activeStep && activeStep.querySelector('.next-btn:not([disabled])');
+    if (btn) btn.click();
+  }
+}
+</script>
+</body>
+</html>
