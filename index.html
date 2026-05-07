@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>現調レポート</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -253,6 +253,84 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
 }
 .arm-status-badge.ok   { background: rgba(74,222,128,0.12); color: var(--success); border: 1px solid rgba(74,222,128,0.25); }
 .arm-status-badge.warn { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+
+/* ══ 日付セクション（工事種別連動） ══ */
+.date-section-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.date-section-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.date-section-header.install .date-section-icon { background: rgba(74,222,128,0.15); }
+.date-section-header.remove  .date-section-icon { background: rgba(248,113,113,0.15); }
+.date-section-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: #fff; }
+.date-section-sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.date-divider {
+  height: 1px; background: var(--border); margin: 20px 0;
+  position: relative;
+}
+.date-divider-label {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  background: var(--bg); padding: 0 10px;
+  font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; font-family: 'Syne', sans-serif;
+}
+/* モードタブ（日付） */
+.date-mode-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+.date-mode-tab {
+  flex: 1; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text-dim); font-size: 11px; font-weight: 600;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 9px 4px; cursor: pointer; transition: all 0.18s; text-align: center;
+}
+.date-mode-tab.active { border-color: var(--accent); color: var(--accent2); background: rgba(124,109,255,0.1); }
+/* 不確定：レンジ */
+.range-box-inner {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 14px; margin-bottom: 4px;
+}
+.range-inner-label { font-size: 10px; color: var(--accent2); letter-spacing: 0.1em; font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 10px; }
+.range-date-block { margin-bottom: 10px; }
+.range-date-block-label { font-size: 10px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.08em; }
+.prec-toggle-sm { display: flex; gap: 4px; margin-bottom: 7px; }
+.prec-btn-sm {
+  flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 7px; color: var(--text-dim); font-size: 10px; font-weight: 600;
+  font-family: 'Noto Sans JP', sans-serif; padding: 6px; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.prec-btn-sm.active { border-color: var(--accent); color: var(--accent2); background: rgba(124,109,255,0.1); }
+.range-row-sm { display: flex; gap: 6px; }
+.sel-wrap-sm { flex: 1; position: relative; }
+.sel-wrap-sm::after { content:'▾'; position:absolute; right:8px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:10px; pointer-events:none; }
+.sel-sm {
+  width:100%; background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:9px; color:var(--text); font-size:12px; font-weight:600;
+  font-family:'Noto Sans JP',sans-serif;
+  padding:9px 24px 9px 10px; appearance:none; outline:none; cursor:pointer;
+}
+.sel-sm:focus { border-color:var(--accent); }
+.sel-sm option { background:#1a1a24; }
+.range-sep-sm { text-align:center; color:var(--text-dim); font-size:14px; padding:6px 0; position:relative; }
+.range-sep-sm::before,.range-sep-sm::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:var(--border); }
+.range-sep-sm::before { left:0; } .range-sep-sm::after { right:0; }
+.range-preview-sm {
+  background:rgba(124,109,255,0.08); border:1px solid rgba(124,109,255,0.2);
+  border-radius:10px; padding:10px 14px; margin-top:10px;
+  font-size:13px; color:var(--accent2); font-family:'Syne',sans-serif; font-weight:700; text-align:center;
+}
+/* 未定 */
+.undecided-box-sm {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:14px; padding:20px 16px; text-align:center; margin-bottom:4px;
+}
+.undecided-box-sm .em { font-size:24px; margin-bottom:8px; }
+.undecided-box-sm p { font-size:12px; color:var(--text-dim); line-height:1.8; }
+
+/* ══ 日付セクションの既存カレンダーを使い回す ══ */
+.date-picker-wrap-sm {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 18px; overflow: hidden; margin-bottom: 4px;
+}
 
 /* トグル */
 .toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
@@ -702,62 +780,64 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
         <button class="next-btn" onclick="nextStep()">次へ →</button>
       </div>
 
-      <!-- Step 2: 作業日 -->
+      <!-- Step 2: 工事内容（最初に聞く） -->
       <div class="step" data-step="2">
-        <div class="step-q">作業日はいつですか？</div>
-        <div class="date-picker-wrap">
-          <div class="date-nav-row">
-            <button class="date-nav-btn" onclick="calPrevMonth()">‹</button>
-            <div class="date-month-label" id="calMonthLabel" onclick="toggleScrollPicker()"></div>
-            <button class="date-nav-btn" onclick="calNextMonth()">›</button>
-          </div>
-          <div class="cal-grid" id="calGrid"></div>
-          <div class="date-display-row">
-            <div>
-              <div class="date-display-val" id="dateDisplayVal">未選択</div>
-              <div class="date-display-sub" id="dateDisplaySub"></div>
-            </div>
-            <button class="scroll-toggle-btn" onclick="toggleScrollPicker()" id="scrollToggleBtn">▼ スクロール</button>
-          </div>
-          <div class="scroll-picker-wrap" id="scrollPickerWrap">
-            <div class="scroll-col">
-              <div class="scroll-col-label">年</div>
-              <div class="scroll-list" id="yearScroll"></div>
-            </div>
-            <div class="scroll-col">
-              <div class="scroll-col-label">月</div>
-              <div class="scroll-list" id="monthScroll"></div>
-            </div>
-            <div class="scroll-col">
-              <div class="scroll-col-label">日</div>
-              <div class="scroll-list" id="dayScroll"></div>
-            </div>
-          </div>
+        <div class="step-q">工事内容は？</div>
+        <div class="btn-grid">
+          <button class="choice-btn" onclick="pickKojiType(this,'設置')"><span class="icon">🔧</span>設置</button>
+          <button class="choice-btn" onclick="pickKojiType(this,'撤去')"><span class="icon">🗑️</span>撤去</button>
+          <button class="choice-btn" onclick="pickKojiType(this,'仮設')">
+            <span class="icon">🔄</span>仮設<small class="sub">設置＆撤去セット</small>
+          </button>
         </div>
+        <button class="next-btn" id="next2" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 3: 作業日（工事種別に連動） -->
+      <div class="step" data-step="3">
+        <div class="step-q" id="step3Title">作業日はいつですか？</div>
+
+        <!-- 設置・撤去：作業日1つ -->
+        <div id="dateBlock_single">
+          <div id="dateSection_single"></div>
+        </div>
+
+        <!-- 仮設：設置日＋撤去日 -->
+        <div id="dateBlock_kasetsu" style="display:none;">
+          <!-- 設置日 -->
+          <div class="date-section-header install">
+            <div class="date-section-icon">🔧</div>
+            <div>
+              <div class="date-section-title">設置日</div>
+              <div class="date-section-sub">機材を設置する日</div>
+            </div>
+          </div>
+          <div id="dateSection_install"></div>
+
+          <div class="date-divider"><div class="date-divider-label">REMOVAL DATE</div></div>
+
+          <!-- 撤去日 -->
+          <div class="date-section-header remove">
+            <div class="date-section-icon">🗑️</div>
+            <div>
+              <div class="date-section-title">撤去日</div>
+              <div class="date-section-sub">機材を撤去する日</div>
+            </div>
+          </div>
+          <div id="dateSection_remove"></div>
+        </div>
+
         <button class="next-btn" onclick="nextStep()">次へ →</button>
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
       </div>
 
-      <!-- Step 3: 時間帯 -->
-      <div class="step" data-step="3">
+      <!-- Step 4: 時間帯 -->
+      <div class="step" data-step="4">
         <div class="step-q">作業時間帯は？</div>
         <div class="btn-grid col2">
           <button class="choice-btn" onclick="pick(this,'timeZone','日中')"><span class="icon">☀️</span>日中</button>
           <button class="choice-btn" onclick="pick(this,'timeZone','夜間')"><span class="icon">🌙</span>夜間</button>
-        </div>
-        <button class="next-btn" id="next3" onclick="nextStep()" disabled>次へ →</button>
-        <button class="back-btn" onclick="prevStep()">← 戻る</button>
-      </div>
-
-      <!-- Step 4: 工事内容 -->
-      <div class="step" data-step="4">
-        <div class="step-q">工事内容は？</div>
-        <div class="btn-grid">
-          <button class="choice-btn" onclick="pick(this,'kojiType','仮設（設置＆撤去）')">
-            <span class="icon">🔄</span>仮設<small class="sub">設置＆撤去セット</small>
-          </button>
-          <button class="choice-btn" onclick="pick(this,'kojiType','設置')"><span class="icon">🔧</span>設置</button>
-          <button class="choice-btn" onclick="pick(this,'kojiType','撤去')"><span class="icon">🗑️</span>撤去</button>
         </div>
         <button class="next-btn" id="next4" onclick="nextStep()" disabled>次へ →</button>
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
@@ -1027,8 +1107,34 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
       </div>
 
-      <!-- Step 14: 特別条件 -->
+      <!-- Step 14: 廃材処理（撤去・仮設のみ表示） -->
       <div class="step" data-step="14">
+        <div class="step-q">廃材の処理はどうしますか？</div>
+        <div class="btn-grid" id="haizaiGrid">
+          <button class="choice-btn" onclick="pick(this,'haizai','引き取り（バカン）')"><span class="icon">🚛</span>引き取り<small class="sub">バカンが回収</small></button>
+          <button class="choice-btn" onclick="pick(this,'haizai','施工会社が処分')"><span class="icon">🏗️</span>施工会社が処分</button>
+          <button class="choice-btn" onclick="pick(this,'haizai','現地残置')"><span class="icon">📦</span>現地残置</button>
+          <button class="choice-btn" onclick="pick(this,'haizai','未定')"><span class="icon">❓</span>未定</button>
+        </div>
+        <textarea class="text-input" id="haizaiNote" rows="1" placeholder="備考（任意）" style="margin-top:4px;"></textarea>
+        <button class="next-btn" id="next14" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 15: アーム手配 -->
+      <div class="step" data-step="15">
+        <div class="step-q">アームの手配はどうしますか？</div>
+        <div class="btn-grid col3">
+          <button class="choice-btn" onclick="pick(this,'armHandling','バカン')"><span class="icon">🏢</span>バカン</button>
+          <button class="choice-btn" onclick="pick(this,'armHandling','施工会社')"><span class="icon">🔧</span>施工会社</button>
+          <button class="choice-btn" onclick="pick(this,'armHandling','未定')"><span class="icon">❓</span>未定</button>
+        </div>
+        <button class="next-btn" id="next15" onclick="nextStep()" disabled>次へ →</button>
+        <button class="back-btn" onclick="prevStep()">← 戻る</button>
+      </div>
+
+      <!-- Step 16: 特別条件 -->
+      <div class="step" data-step="16">
         <div class="step-q">その他特別条件はありますか？</div>
         <div class="toggle-row">
           <button class="toggle-btn" id="tokNone" onclick="toggleToku('none')">✅ なし</button>
@@ -1038,7 +1144,7 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
           <textarea class="text-input" id="tokuText" rows="3" placeholder="例）電源工事が別途必要、養生必須、入館証要など"></textarea>
         </div>
         <div style="height:16px;"></div>
-        <button class="next-btn" id="next14" onclick="generateReport()" disabled>レポートを生成 ✨</button>
+        <button class="next-btn" id="next16" onclick="generateReport()" disabled>レポートを生成 ✨</button>
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
       </div>
     </div>
@@ -1107,7 +1213,7 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
 // ══════════════════════════════════════
 // 定数・状態
 // ══════════════════════════════════════
-const TOTAL = 14;
+const TOTAL = 16;
 const DEVICE_DEFS = [
   { key: 'IPカメラ',     icon: '📷' },
   { key: 'ステレオカメラ', icon: '📸' },
@@ -1118,123 +1224,245 @@ const DEVICE_DEFS = [
 
 let step = 1, d = {}, kosoMode = null, tokuMode = null, currentReport = null, modalReport = null;
 d.systemCount  = 1;
-d.cameraCounts = {}; // { 'IPカメラ': 2, ... }
-d.armData      = {}; // { wall:{sub,count}, ceil:{sub,count}, pole:{count}, none:{count} }
+d.cameraCounts = {};
+d.armData      = {};
+// 日付データ: { single, install, remove } それぞれ { mode:'confirm'|'range'|'undecided', date, rangeFrom, rangeTo }
+d.dateData = { single:{mode:'confirm'}, install:{mode:'confirm'}, remove:{mode:'confirm'} };
 
 // ══════════════════════════════════════
-// カレンダー
+// カレンダー（複数インスタンス対応）
 // ══════════════════════════════════════
 const today = new Date();
-let calYear = today.getFullYear(), calMonth = today.getMonth();
-let selectedDate = null;
-let scrollPickerOpen = false;
-
 const WEEKDAYS = ['日','月','火','水','木','金','土'];
 const MONTHS_JA = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-function buildCalendar() {
-  document.getElementById('calMonthLabel').textContent = calYear + '年 ' + MONTHS_JA[calMonth];
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = WEEKDAYS.map((w,i) =>
-    `<div class="cal-head${i===0?' sun':i===6?' sat':''}">${w}</div>`
-  ).join('');
-  const first = new Date(calYear, calMonth, 1).getDay();
-  const days  = new Date(calYear, calMonth+1, 0).getDate();
-  for (let i = 0; i < first; i++) grid.innerHTML += '<div class="cal-day empty"></div>';
-  for (let dd = 1; dd <= days; dd++) {
-    const dow = (first + dd - 1) % 7;
-    const isToday = (calYear===today.getFullYear() && calMonth===today.getMonth() && dd===today.getDate());
-    const isSel   = selectedDate && (calYear===selectedDate.y && calMonth===selectedDate.m && dd===selectedDate.d);
-    const cls = ['cal-day',
-      dow===0?'sun':dow===6?'sat':'',
-      isToday&&!isSel?'today':'',
-      isSel?'selected-day':''
-    ].filter(Boolean).join(' ');
-    grid.innerHTML += `<div class="${cls}" onclick="selectCalDay(${dd})">${dd}</div>`;
+// calState[id] = { year, month, sel:{y,m,d} }
+const calStateMap = {};
+function initCalState(id) {
+  if (!calStateMap[id]) calStateMap[id] = { year:today.getFullYear(), month:today.getMonth(), sel:null };
+}
+function buildCalById(id) {
+  initCalState(id);
+  const s = calStateMap[id];
+  const containerId = 'calContainer_'+id;
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const first = new Date(s.year, s.month, 1).getDay();
+  const days  = new Date(s.year, s.month+1, 0).getDate();
+  const selTxt = s.sel ? s.sel.y+'年 '+(s.sel.m+1)+'月 '+s.sel.d+'日' : '未選択';
+  const selSub = s.sel ? '（'+WEEKDAYS[new Date(s.sel.y,s.sel.m,s.sel.d).getDay()]+'曜日）' : '';
+  let grid = WEEKDAYS.map((w,i)=>`<div class="cal-head${i===0?' sun':i===6?' sat':''}">${w}</div>`).join('');
+  grid += Array(first).fill('<div class="cal-day empty"></div>').join('');
+  for (let dd=1;dd<=days;dd++) {
+    const dow=(first+dd-1)%7;
+    const isSel=s.sel&&s.sel.y===s.year&&s.sel.m===s.month&&s.sel.d===dd;
+    const isToday=s.year===today.getFullYear()&&s.month===today.getMonth()&&dd===today.getDate();
+    const cls=['cal-day',dow===0?'sun':dow===6?'sat':'',isSel?'selected-day':'',isToday&&!isSel?'today':''].filter(Boolean).join(' ');
+    grid+=`<div class="${cls}" onclick="selectCalDayById('${id}',${dd})">${dd}</div>`;
+  }
+  el.innerHTML=`
+    <div class="date-picker-wrap-sm">
+      <div class="date-nav-row">
+        <button class="date-nav-btn" onclick="calMoveById('${id}',-1)">‹</button>
+        <div class="date-month-label" style="cursor:default">${s.year}年 ${MONTHS_JA[s.month]}</div>
+        <button class="date-nav-btn" onclick="calMoveById('${id}',1)">›</button>
+      </div>
+      <div class="cal-grid">${grid}</div>
+      <div class="date-display-row">
+        <div>
+          <div class="date-display-val">${selTxt}</div>
+          <div class="date-display-sub">${selSub}</div>
+        </div>
+      </div>
+    </div>`;
+  // dateDataに反映
+  if (s.sel) {
+    const key = id; // single / install / remove
+    if (d.dateData[key]) d.dateData[key].date = s.sel;
   }
 }
-function selectCalDay(day) {
-  selectedDate = { y: calYear, m: calMonth, d: day };
-  buildCalendar(); updateDateDisplay(); syncScrollToDate();
+function calMoveById(id, delta) {
+  initCalState(id); const s=calStateMap[id];
+  s.month+=delta; if(s.month<0){s.month=11;s.year--;} if(s.month>11){s.month=0;s.year++;}
+  buildCalById(id);
 }
-function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} buildCalendar(); }
-function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} buildCalendar(); }
+function selectCalDayById(id, day) {
+  initCalState(id); const s=calStateMap[id];
+  s.sel={y:s.year,m:s.month,d:day};
+  if (d.dateData[id]) d.dateData[id].date = s.sel;
+  buildCalById(id);
+}
 
-function updateDateDisplay() {
-  if (!selectedDate) return;
-  const sd = selectedDate;
-  const dt = new Date(sd.y, sd.m, sd.d);
-  const wds = ['日','月','火','水','木','金','土'];
-  document.getElementById('dateDisplayVal').textContent = sd.y + '年 ' + (sd.m+1) + '月 ' + sd.d + '日';
-  document.getElementById('dateDisplaySub').textContent = '（' + wds[dt.getDay()] + '曜日）';
-}
-function getSelectedDateStr() {
-  if (!selectedDate) return '未選択';
-  const { y, m, d } = selectedDate;
-  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-}
-function getSelectedDateFileStr() {
-  if (!selectedDate) return 'nodate';
-  const { y, m, d } = selectedDate;
-  return y + '_' + String(m+1).padStart(2,'0') + '_' + String(d).padStart(2,'0');
+// ══════════════════════════════════════
+// 工事種別の選択（Step2）
+// ══════════════════════════════════════
+function pickKojiType(btn, val) {
+  btn.closest('.btn-grid').querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  d.kojiType = val;
+  const nb = document.getElementById('next2');
+  if (nb) nb.disabled = false;
 }
 
-function buildScrollPicker() {
-  const yl = document.getElementById('yearScroll');
-  const ml = document.getElementById('monthScroll');
-  const y0 = today.getFullYear() - 1, y1 = today.getFullYear() + 2;
-  yl.innerHTML = '';
-  for (let y = y0; y <= y1; y++) {
-    const el = document.createElement('div');
-    el.className = 'scroll-item'; el.textContent = y + '年'; el.dataset.val = y;
-    el.onclick = () => { scrollPickYear(y); };
-    yl.appendChild(el);
+// ══════════════════════════════════════
+// 日付ステップ（Step3）の構築
+// ══════════════════════════════════════
+function buildDateStep() {
+  const isKasetsu = d.kojiType === '仮設';
+  document.getElementById('dateBlock_single').style.display  = isKasetsu ? 'none'  : 'block';
+  document.getElementById('dateBlock_kasetsu').style.display = isKasetsu ? 'block' : 'none';
+  const title = isKasetsu ? '設置日・撤去日を設定してください' :
+    (d.kojiType==='撤去' ? '撤去日はいつですか？' : '設置日はいつですか？');
+  document.getElementById('step3Title').textContent = title;
+
+  if (isKasetsu) {
+    buildDateSection('install');
+    buildDateSection('remove');
+  } else {
+    buildDateSection('single');
   }
-  ml.innerHTML = '';
-  for (let m = 1; m <= 12; m++) {
-    const el = document.createElement('div');
-    el.className = 'scroll-item'; el.textContent = m + '月'; el.dataset.val = m-1;
-    el.onclick = () => { scrollPickMonth(m-1); };
-    ml.appendChild(el);
-  }
-  updateDayScroll();
 }
-function updateDayScroll() {
-  const dl = document.getElementById('dayScroll');
-  const days = new Date(calYear, calMonth+1, 0).getDate();
-  dl.innerHTML = '';
-  for (let dd = 1; dd <= days; dd++) {
-    const el = document.createElement('div');
-    el.className = 'scroll-item'; el.textContent = dd + '日'; el.dataset.val = dd;
-    el.onclick = () => { selectCalDay(dd); };
-    dl.appendChild(el);
-  }
-  highlightScrollItems();
+
+function buildDateSection(id) {
+  const containerId = 'dateSection_'+id;
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!d.dateData[id]) d.dateData[id] = { mode:'confirm' };
+  const mode = d.dateData[id].mode || 'confirm';
+  el.innerHTML = `
+    <div class="date-mode-tabs">
+      <div class="date-mode-tab${mode==='confirm'?   ' active':''}" onclick="setDateMode('${id}','confirm',this)">📅 確定</div>
+      <div class="date-mode-tab${mode==='range'?     ' active':''}" onclick="setDateMode('${id}','range',this)">📆 不確定</div>
+      <div class="date-mode-tab${mode==='undecided'? ' active':''}" onclick="setDateMode('${id}','undecided',this)">❓ 未定</div>
+    </div>
+    <div id="datePanel_confirm_${id}"  style="display:${mode==='confirm'?'block':'none'}">
+      <div id="calContainer_${id}"></div>
+    </div>
+    <div id="datePanel_range_${id}"    style="display:${mode==='range'?'block':'none'}">
+      <div id="rangeContainer_${id}"></div>
+    </div>
+    <div id="datePanel_undecided_${id}" style="display:${mode==='undecided'?'block':'none'}">
+      <div class="undecided-box-sm"><div class="em">📋</div><p>日付は未定としてレポートに記載されます<br>決定後に修正してください</p></div>
+    </div>`;
+  buildCalById(id);
+  buildRangeSection(id);
 }
-function highlightScrollItems() {
-  document.querySelectorAll('#yearScroll .scroll-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.val)===calYear));
-  document.querySelectorAll('#monthScroll .scroll-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.val)===calMonth));
-  document.querySelectorAll('#dayScroll .scroll-item').forEach(el => el.classList.toggle('active', selectedDate && parseInt(el.dataset.val)===selectedDate.d));
-}
-function scrollPickYear(y) { calYear = y; buildCalendar(); updateDayScroll(); highlightScrollItems(); }
-function scrollPickMonth(m) { calMonth = m; buildCalendar(); updateDayScroll(); highlightScrollItems(); }
-function syncScrollToDate() {
-  highlightScrollItems();
-  ['yearScroll','monthScroll','dayScroll'].forEach(id => {
-    const el = document.getElementById(id);
-    const active = el.querySelector('.active');
-    if (active) el.scrollTop = active.offsetTop - el.offsetHeight/2 + active.offsetHeight/2;
+
+function setDateMode(id, mode, el) {
+  el.closest('.date-mode-tabs').querySelectorAll('.date-mode-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  d.dateData[id].mode = mode;
+  ['confirm','range','undecided'].forEach(m=>{
+    const p=document.getElementById(`datePanel_${m}_${id}`);
+    if(p) p.style.display=m===mode?'block':'none';
   });
 }
-function toggleScrollPicker() {
-  scrollPickerOpen = !scrollPickerOpen;
-  const wrap = document.getElementById('scrollPickerWrap');
-  const btn  = document.getElementById('scrollToggleBtn');
-  wrap.classList.toggle('open', scrollPickerOpen);
-  btn.textContent = scrollPickerOpen ? '▲ カレンダー' : '▼ スクロール';
-  if (scrollPickerOpen) { buildScrollPicker(); syncScrollToDate(); }
+
+// ══════════════════════════════════════
+// 不確定レンジUI
+// ══════════════════════════════════════
+const rangeStateMap = {};
+function buildRangeSection(id) {
+  const el = document.getElementById('rangeContainer_'+id);
+  if (!el) return;
+  if (!rangeStateMap[id]) rangeStateMap[id] = { fromPrec:'jun', toPrec:'jun' };
+  el.innerHTML = `
+  <div class="range-box-inner">
+    <div class="range-inner-label">RANGE — 期間を指定</div>
+    <div class="range-date-block">
+      <div class="range-date-block-label">FROM — 開始</div>
+      <div class="prec-toggle-sm">
+        <div class="prec-btn-sm active" onclick="setPrecById('${id}','from','jun',this)">旬で指定</div>
+        <div class="prec-btn-sm" onclick="setPrecById('${id}','from','day',this)">日付で指定</div>
+      </div>
+      <div class="range-row-sm">
+        <div class="sel-wrap-sm"><select class="sel-sm" id="r_${id}_fromM" onchange="updRangeById('${id}')">
+          <option value="">月</option>${MONTHS_JA.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+        </select></div>
+        <div class="sel-wrap-sm" id="r_${id}_fromJW"><select class="sel-sm" id="r_${id}_fromJ" onchange="updRangeById('${id}')">
+          <option value="">旬</option><option>上旬</option><option>中旬</option><option>下旬</option>
+        </select></div>
+        <div class="sel-wrap-sm" id="r_${id}_fromDW" style="display:none"><select class="sel-sm" id="r_${id}_fromD" onchange="updRangeById('${id}')">
+          <option value="">日</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="range-sep-sm">〜</div>
+    <div class="range-date-block">
+      <div class="range-date-block-label">TO — 終了</div>
+      <div class="prec-toggle-sm">
+        <div class="prec-btn-sm active" onclick="setPrecById('${id}','to','jun',this)">旬で指定</div>
+        <div class="prec-btn-sm" onclick="setPrecById('${id}','to','day',this)">日付で指定</div>
+      </div>
+      <div class="range-row-sm">
+        <div class="sel-wrap-sm"><select class="sel-sm" id="r_${id}_toM" onchange="updRangeById('${id}')">
+          <option value="">月</option>${MONTHS_JA.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}
+        </select></div>
+        <div class="sel-wrap-sm" id="r_${id}_toJW"><select class="sel-sm" id="r_${id}_toJ" onchange="updRangeById('${id}')">
+          <option value="">旬</option><option>上旬</option><option>中旬</option><option>下旬</option>
+        </select></div>
+        <div class="sel-wrap-sm" id="r_${id}_toDW" style="display:none"><select class="sel-sm" id="r_${id}_toD" onchange="updRangeById('${id}')">
+          <option value="">日</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="range-preview-sm" id="r_${id}_preview">期間を選択してください</div>
+  </div>`;
+}
+function buildDayOptsById(selEl, month) {
+  const days = month ? new Date(today.getFullYear(),month,0).getDate() : 31;
+  selEl.innerHTML = '<option value="">日</option>';
+  for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i+'日';o.textContent=i+'日';selEl.appendChild(o);}
+}
+function setPrecById(id, side, mode, el) {
+  if(!rangeStateMap[id]) rangeStateMap[id]={fromPrec:'jun',toPrec:'jun'};
+  rangeStateMap[id][side+'Prec']=mode;
+  el.closest('.prec-toggle-sm').querySelectorAll('.prec-btn-sm').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`r_${id}_${side}JW`).style.display=mode==='jun'?'flex':'none';
+  document.getElementById(`r_${id}_${side}DW`).style.display=mode==='day'?'flex':'none';
+  if(mode==='day'){const m=parseInt(document.getElementById(`r_${id}_${side}M`).value)||0;buildDayOptsById(document.getElementById(`r_${id}_${side}D`),m);}
+  updRangeById(id);
+}
+function updRangeById(id) {
+  const s=rangeStateMap[id]||{fromPrec:'jun',toPrec:'jun'};
+  const fm=document.getElementById(`r_${id}_fromM`)?.value||'';
+  const fv=s.fromPrec==='jun'?(document.getElementById(`r_${id}_fromJ`)?.value||''):(document.getElementById(`r_${id}_fromD`)?.value||'');
+  const tm=document.getElementById(`r_${id}_toM`)?.value||'';
+  const tv=s.toPrec==='jun'?(document.getElementById(`r_${id}_toJ`)?.value||''):(document.getElementById(`r_${id}_toD`)?.value||'');
+  const from=(fm?fm+'月':'')+fv;
+  const to=(tm?tm+'月':'')+tv;
+  const txt=from&&to?from+' 〜 '+to:(from||to||'期間を選択してください');
+  const prev=document.getElementById(`r_${id}_preview`);
+  if(prev) prev.textContent=txt;
+  if(!d.dateData[id]) d.dateData[id]={mode:'range'};
+  d.dateData[id].rangeText=txt;
 }
 
+// ══════════════════════════════════════
+// 日付テキスト取得
+// ══════════════════════════════════════
+function getDateText(id) {
+  const dd = d.dateData[id];
+  if (!dd) return '未入力';
+  if (dd.mode==='undecided') return '未定';
+  if (dd.mode==='range') return dd.rangeText || '期間未選択';
+  if (dd.mode==='confirm' && dd.date) {
+    const { y, m, d: day } = dd.date;
+    return y+'-'+String(m+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  }
+  return '未選択';
+}
+function getDateFileStr() {
+  const dd = d.dateData;
+  if (d.kojiType==='仮設') {
+    const inst = getDateText('install');
+    return (inst!=='未定'&&inst!=='未選択'&&inst!=='期間未選択') ? inst.replace(/[^\d]/g,'').slice(0,8) : 'nodate';
+  }
+  const txt = getDateText('single');
+  if (txt.match(/^\d{4}-\d{2}-\d{2}$/)) return txt.replace(/-/g,'_');
+  return 'nodate';
+}
 // ══════════════════════════════════════
 // ステップ管理
 // ══════════════════════════════════════
@@ -1247,10 +1475,20 @@ function showStep(n) {
   const t = document.querySelector('[data-step="'+n+'"]');
   if (t) t.classList.add('active');
   updateProgress();
+  if (n === 3) buildDateStep();
   if (n === 7) buildDeviceList();
   if (n === 9) initArmStep();
+  // 廃材ステップ（14）は設置のみの場合スキップ
+  if (n === 14 && d.kojiType === '設置') { step=15; showStep(15); return; }
+  // アーム手配（15）はアームなし全選択の場合スキップ
+  if (n === 15 && isAllNoArm()) { step=16; showStep(16); return; }
 }
-// step8は存在しない（スキップ番号）
+function isAllNoArm() {
+  // armDataがnoneのみかつwallもceilもpoleもない場合
+  const keys = Object.keys(d.armData||{});
+  return keys.length === 0 || (keys.length===1 && keys[0]==='none');
+}
+// step8はスキップ
 const SKIP_STEPS = new Set([8]);
 function nextStep() {
   let n = step + 1;
@@ -1590,7 +1828,7 @@ function toggleToku(mode) {
   document.getElementById('tokNone').classList.toggle('selected', mode==='none');
   document.getElementById('tokYes').classList.toggle('selected',  mode==='yes');
   document.getElementById('tokuDetail').style.display = mode==='yes' ? 'block' : 'none';
-  document.getElementById('next14').disabled = false;
+  document.getElementById('next16').disabled = false;
 }
 
 // ══════════════════════════════════════
@@ -1598,30 +1836,15 @@ function toggleToku(mode) {
 // ══════════════════════════════════════
 function buildArmText(armData) {
   if (!armData || Object.keys(armData).length === 0) return 'アーム　　：未設定';
-  const nameMap = { wall:'壁付けアーム', pole:'ポールマウント', ceil:'天井吊り下げ', none:'アームなし' };
   const lines = [];
-  // wall
   if (armData.wall && armData.wall.methods) {
-    const entries = Object.entries(armData.wall.methods).filter(([,c])=>c>0);
-    if (entries.length) {
-      entries.forEach(([m,c]) => lines.push('アーム　　：壁付けアーム（' + m + '） × ' + c + '台'));
-    }
+    Object.entries(armData.wall.methods).filter(([,c])=>c>0).forEach(([m,c]) => lines.push('アーム　　：壁付けアーム（' + m + '） × ' + c + '台'));
   }
-  // ceil
   if (armData.ceil && armData.ceil.methods) {
-    const entries = Object.entries(armData.ceil.methods).filter(([,c])=>c>0);
-    if (entries.length) {
-      entries.forEach(([m,c]) => lines.push('アーム　　：天井吊り下げ（' + m + '） × ' + c + '台'));
-    }
+    Object.entries(armData.ceil.methods).filter(([,c])=>c>0).forEach(([m,c]) => lines.push('アーム　　：天井吊り下げ（' + m + '） × ' + c + '台'));
   }
-  // pole
-  if (armData.pole && armData.pole.count > 0) {
-    lines.push('アーム　　：ポールマウント × ' + armData.pole.count + '台');
-  }
-  // none
-  if (armData.none && armData.none.count > 0) {
-    lines.push('アーム　　：アームなし × ' + armData.none.count + '台');
-  }
+  if (armData.pole && armData.pole.count > 0) lines.push('アーム　　：ポールマウント × ' + armData.pole.count + '台');
+  if (armData.none && armData.none.count > 0) lines.push('アーム　　：アームなし × ' + armData.none.count + '台');
   return lines.length ? lines.join('\n') : 'アーム　　：未設定';
 }
 
@@ -1633,7 +1856,17 @@ function buildCameraText(counts, other) {
   return lines.length ? lines.join('\n') : '　 未選択';
 }
 
+function buildWorkDateText(r) {
+  if (r.kojiType === '仮設') {
+    return `設置日　　：${r.installDate}\n撤去日　　：${r.removeDate}`;
+  }
+  const label = r.kojiType === '撤去' ? '撤去日' : '設置日';
+  return `${label}　　：${r.workDate}`;
+}
+
 function buildText(r) {
+  const haizaiLine = r.haizai ? `廃材処理　：${r.haizai}${r.haizaiNote?' （'+r.haizaiNote+'）':''}` : '';
+  const armHandlingLine = r.armHandling ? `アーム手配　：${r.armHandling}` : '';
   return `━━━━━━━━━━━━━━━━━━━━━━
 　現調レポート
 　作成日：${r.createdAt}
@@ -1641,17 +1874,19 @@ function buildText(r) {
 
 【基本情報】
 現場名　　：${r.siteName}
-作業日　　：${r.workDate}
-時間帯　　：${r.timeZone}
 工事内容　：${r.kojiType}
+${buildWorkDateText(r)}
+時間帯　　：${r.timeZone}
 工事場所　：${r.location}
 施工箇所　：${r.sekouSho}
+${haizaiLine}
 
 【機器情報】
 システム台数：${r.systemCount}台（最大${r.systemCount*3}台接続可）
 カメラ種類・台数：
 ${r.cameraText}
 ${r.armText}
+${armHandlingLine}
 
 【配線・工事】
 配線方法　：${r.wiring}
@@ -1680,17 +1915,24 @@ function generateReport() {
 
   const cameraCounts    = Object.assign({}, d.cameraCounts);
   const cameraTypeOther = document.getElementById('cameraTypeOther').value;
+  const isKasetsu       = d.kojiType === '仮設';
+  const workDate        = isKasetsu ? getDateText('install') : getDateText('single');
+  const installDate     = getDateText('install');
+  const removeDate      = getDateText('remove');
+  const workDateFile    = getDateFileStr();
 
   currentReport = {
     id:           Date.now(),
     createdAt:    new Date().toLocaleDateString('ja-JP'),
     siteName:     document.getElementById('siteName').value || '未入力',
-    workDate:     getSelectedDateStr(),
-    workDateFile: getSelectedDateFileStr(),
+    workDate, installDate, removeDate, workDateFile,
     timeZone:     d.timeZone || '未選択',
     kojiType:     d.kojiType || '未選択',
     location:     d.location || '未選択',
     sekouSho:     document.getElementById('sekouSho').value || '未入力',
+    haizai:       d.haizai || '',
+    haizaiNote:   (document.getElementById('haizaiNote') && document.getElementById('haizaiNote').value) || '',
+    armHandling:  d.armHandling || '',
     systemCount:  d.systemCount || 1,
     cameraCounts, cameraTypeOther,
     cameraText:   buildCameraText(cameraCounts, cameraTypeOther),
@@ -1759,7 +2001,8 @@ function saveReport() {
 }
 function getFileName(r) {
   const sn = (r.siteName || '現場').replace(/[\\\/:\*\?"<>\|]/g,'_');
-  return r.workDateFile + '_' + sn + '.txt';
+  const dateStr = r.workDateFile || 'nodate';
+  return dateStr + '_' + sn + '.txt';
 }
 function downloadSingle() {
   if (!currentReport) return;
@@ -1905,12 +2148,9 @@ function downloadModal() {
 // リセット・タブ
 // ══════════════════════════════════════
 function resetAll() {
-  d = { systemCount:1, cameraCounts:{}, armData:{} };
+  d = { systemCount:1, cameraCounts:{}, armData:{},
+        dateData:{ single:{mode:'confirm'}, install:{mode:'confirm'}, remove:{mode:'confirm'} } };
   kosoMode = null; tokuMode = null; step = 1; currentReport = null;
-  selectedDate = null; calYear = today.getFullYear(); calMonth = today.getMonth();
-  scrollPickerOpen = false;
-  document.getElementById('scrollPickerWrap').classList.remove('open');
-  document.getElementById('scrollToggleBtn').textContent = '▼ スクロール';
   document.getElementById('stepsContainer').style.display = 'block';
   document.getElementById('progressWrap').style.display   = 'block';
   document.getElementById('resultPanel').classList.remove('active');
@@ -1918,25 +2158,20 @@ function resetAll() {
   document.querySelectorAll('.next-btn[id]').forEach(b => b.disabled = true);
   document.getElementById('kosoDetail').style.display = 'none';
   document.getElementById('tokuDetail').style.display = 'none';
-  document.getElementById('dateDisplayVal').textContent = '未選択';
-  document.getElementById('dateDisplaySub').textContent = '';
   document.getElementById('sysCountVal').textContent = '1';
   document.getElementById('sysMaxCam').textContent = '3';
-  // アームUIリセット
   ['wall','pole','ceil','none'].forEach(k => {
-    const card  = document.getElementById('armCard_'+k);
-    const check = document.getElementById('armCheck_'+k);
-    const sub   = document.getElementById('armSub_'+k);
-    if (card)  card.classList.remove('selected');
-    if (check) check.textContent = '';
-    if (sub)   sub.style.display = 'none';
+    const card=document.getElementById('armCard_'+k), check=document.getElementById('armCheck_'+k), sub=document.getElementById('armSub_'+k);
+    if(card) card.classList.remove('selected');
+    if(check) check.textContent='';
+    if(sub) sub.style.display='none';
   });
-  // メソッドカウントリセット
-  document.querySelectorAll('.arm-method-cnt').forEach(el => el.textContent = '0');
-  document.querySelectorAll('.arm-method-row').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.arm-sub-total span').forEach(el => el.textContent = '0');
-  document.querySelectorAll('#armCnt_pole, #armCnt_none').forEach(el => el.textContent = '0');
-  buildCalendar();
+  document.querySelectorAll('.arm-method-cnt').forEach(el=>el.textContent='0');
+  document.querySelectorAll('.arm-method-row').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.arm-sub-total span').forEach(el=>el.textContent='0');
+  document.querySelectorAll('#armCnt_pole, #armCnt_none').forEach(el=>el.textContent='0');
+  document.getElementById('lanLength').value='10';
+  document.getElementById('lanLengthVal').textContent='10';
   showStep(1);
 }
 function switchTab(tab) {
@@ -1967,7 +2202,7 @@ function showToast(msg, type) {
 d.systemCount  = 1;
 d.cameraCounts = {};
 d.armData      = {};
-buildCalendar();
+d.dateData     = { single:{mode:'confirm'}, install:{mode:'confirm'}, remove:{mode:'confirm'} };
 updateProgress();
 updateBadge();
 document.getElementById('listTab').style.display = 'none';
