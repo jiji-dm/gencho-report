@@ -2343,11 +2343,6 @@ document.addEventListener('touchend', function(e) {
   if (now - lastTouchEnd < 300) e.preventDefault();
   lastTouchEnd = now;
 }, { passive: false });
-
-// ボタン連打時のtouchstartデフォルト防止
-document.addEventListener('touchstart', function(e) {
-  if (e.target.tagName === 'BUTTON') e.preventDefault();
-}, { passive: false });
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter') return;
   // IME変換確定中（isComposing=true）は無視
