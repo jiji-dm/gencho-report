@@ -148,6 +148,28 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
 .field-label { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 8px; }
 .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
 
+/* ══ 作業計画セクション ══ */
+.work-plan-section {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 16px; margin-bottom: 14px;
+}
+.work-plan-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.work-plan-row:last-child { border-bottom: none; padding-bottom: 0; }
+.work-plan-row:first-child { padding-top: 0; }
+.work-plan-item-label {
+  font-size: 12px; color: var(--text-dim); font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+}
+.work-plan-ctrl { display: flex; align-items: center; gap: 10px; }
+.work-plan-val {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+  color: #fff; min-width: 40px; text-align: center;
+}
+.work-plan-unit { font-size: 11px; color: var(--text-dim); }
+
 /* ══ フィールドセクション ══ */
 .field-section {
   background: var(--surface); border: 1.5px solid var(--border);
@@ -1061,13 +1083,30 @@ small.sub { color: var(--text-muted); font-size: 10px; display: block; margin-to
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
       </div>
 
-      <!-- Step 11: 作業人数・時間 -->
+      <!-- Step 11: 作業人数・日数・時間（仮設は設置・撤去別） -->
       <div class="step" data-step="11">
-        <div class="step-q">作業人数と予想時間</div>
-        <div class="dual-grid">
-          <div><div class="field-label">作業人数（名）</div><input type="number" class="num-input" id="workerCount" min="1" value="2"></div>
-          <div><div class="field-label">予想時間（時間）</div><input type="number" class="num-input" id="workHours" min="0.5" step="0.5" value="3"></div>
+        <div class="step-q" id="step11Title">作業計画</div>
+
+        <!-- 設置・撤去（単独） -->
+        <div id="workBlock_single">
+          <div id="workSection_single"></div>
         </div>
+
+        <!-- 仮設：設置＋撤去 -->
+        <div id="workBlock_kasetsu" style="display:none;">
+          <div class="date-section-header install" style="margin-bottom:12px;">
+            <div class="date-section-icon">🔧</div>
+            <div><div class="date-section-title">設置</div></div>
+          </div>
+          <div id="workSection_install"></div>
+          <div class="date-divider" style="margin:18px 0;"><div class="date-divider-label">REMOVAL</div></div>
+          <div class="date-section-header remove" style="margin-bottom:12px;">
+            <div class="date-section-icon">🗑️</div>
+            <div><div class="date-section-title">撤去</div></div>
+          </div>
+          <div id="workSection_remove"></div>
+        </div>
+
         <button class="next-btn" onclick="nextStep()">次へ →</button>
         <button class="back-btn" onclick="prevStep()">← 戻る</button>
       </div>
@@ -1478,6 +1517,7 @@ function showStep(n) {
   if (n === 3) buildDateStep();
   if (n === 7) buildDeviceList();
   if (n === 9) initArmStep();
+  if (n === 11) buildWorkStep();
   // 廃材ステップ（14）は設置のみの場合スキップ
   if (n === 14 && d.kojiType === '設置') { step=15; showStep(15); return; }
   // アーム手配（15）はアームなし全選択の場合スキップ
@@ -1808,12 +1848,82 @@ function armCntChange(armKey, delta) {
 
 // LANケーブル長さ（5m刻み、最小0）
 function lanCntChange(delta) {
-  const el  = document.getElementById('lanLength');
+  const el   = document.getElementById('lanLength');
   const disp = document.getElementById('lanLengthVal');
   let val = parseInt(el.value) || 0;
   val = Math.max(0, val + delta);
   el.value = val;
   disp.textContent = val;
+}
+
+// ══════════════════════════════════════
+// 作業計画ステップ（Step11）
+// d.workPlan = {
+//   single:  { workers:2, days:1, hours:3 },
+//   install: { workers:2, days:1, hours:3 },
+//   remove:  { workers:2, days:1, hours:3 },
+// }
+// ══════════════════════════════════════
+function buildWorkStep() {
+  const isKasetsu = d.kojiType === '仮設';
+  document.getElementById('workBlock_single').style.display   = isKasetsu ? 'none'  : 'block';
+  document.getElementById('workBlock_kasetsu').style.display  = isKasetsu ? 'block' : 'none';
+  const title = isKasetsu ? '設置・撤去の作業計画' :
+    (d.kojiType==='撤去' ? '撤去工事の作業計画' : '設置工事の作業計画');
+  document.getElementById('step11Title').textContent = title;
+  if (!d.workPlan) d.workPlan = {};
+  if (isKasetsu) {
+    buildWorkSection('install');
+    buildWorkSection('remove');
+  } else {
+    buildWorkSection('single');
+  }
+}
+
+function buildWorkSection(id) {
+  const el = document.getElementById('workSection_'+id);
+  if (!el) return;
+  if (!d.workPlan[id]) d.workPlan[id] = { workers:2, days:1, hours:3 };
+  const p = d.workPlan[id];
+  el.innerHTML = `
+  <div class="work-plan-section">
+    <div class="work-plan-row">
+      <div class="work-plan-item-label">👷 作業人数</div>
+      <div class="work-plan-ctrl">
+        <button class="cnt-btn" onclick="workPlanChange('${id}','workers',-1)">−</button>
+        <div class="work-plan-val" id="wp_${id}_workers">${p.workers}</div>
+        <button class="cnt-btn" onclick="workPlanChange('${id}','workers',1)">＋</button>
+        <div class="work-plan-unit">名</div>
+      </div>
+    </div>
+    <div class="work-plan-row">
+      <div class="work-plan-item-label">📅 かかる日数</div>
+      <div class="work-plan-ctrl">
+        <button class="cnt-btn" onclick="workPlanChange('${id}','days',-1)">−</button>
+        <div class="work-plan-val" id="wp_${id}_days">${p.days}</div>
+        <button class="cnt-btn" onclick="workPlanChange('${id}','days',1)">＋</button>
+        <div class="work-plan-unit">日</div>
+      </div>
+    </div>
+    <div class="work-plan-row">
+      <div class="work-plan-item-label">⏱ 予想時間</div>
+      <div class="work-plan-ctrl">
+        <button class="cnt-btn" onclick="workPlanChange('${id}','hours',-0.5)">−</button>
+        <div class="work-plan-val" id="wp_${id}_hours">${p.hours}</div>
+        <button class="cnt-btn" onclick="workPlanChange('${id}','hours',0.5)">＋</button>
+        <div class="work-plan-unit">時間</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function workPlanChange(id, key, delta) {
+  if (!d.workPlan) d.workPlan = {};
+  if (!d.workPlan[id]) d.workPlan[id] = { workers:2, days:1, hours:3 };
+  const min = key==='hours' ? 0.5 : 1;
+  d.workPlan[id][key] = Math.max(min, (d.workPlan[id][key]||min) + delta);
+  const el = document.getElementById(`wp_${id}_${key}`);
+  if (el) el.textContent = d.workPlan[id][key];
 }
 
 function toggleKoso(mode) {
@@ -1864,8 +1974,31 @@ function buildWorkDateText(r) {
   return `${label}　　：${r.workDate}`;
 }
 
+function buildWorkPlanText(r) {
+  if (r.kojiType === '仮設') {
+    const i = r.workPlan.install || {};
+    const rv = r.workPlan.remove  || {};
+    return `【作業計画 — 設置】
+作業人数　：${i.workers||'-'}名
+かかる日数　：${i.days||'-'}日
+予想時間　：${i.hours||'-'}時間
+${r.kosoLine}
+
+【作業計画 — 撤去】
+作業人数　：${rv.workers||'-'}名
+かかる日数　：${rv.days||'-'}日
+予想時間　：${rv.hours||'-'}時間`;
+  }
+  const p = r.workPlan.single || {};
+  return `【作業計画】
+作業人数　：${p.workers||'-'}名
+かかる日数　：${p.days||'-'}日
+予想時間　：${p.hours||'-'}時間
+${r.kosoLine}`;
+}
+
 function buildText(r) {
-  const haizaiLine = r.haizai ? `廃材処理　：${r.haizai}${r.haizaiNote?' （'+r.haizaiNote+'）':''}` : '';
+  const haizaiLine    = r.haizai ? `廃材処理　：${r.haizai}${r.haizaiNote?' （'+r.haizaiNote+'）':''}` : '';
   const armHandlingLine = r.armHandling ? `アーム手配　：${r.armHandling}` : '';
   return `━━━━━━━━━━━━━━━━━━━━━━
 　現調レポート
@@ -1893,10 +2026,7 @@ ${armHandlingLine}
 LANケーブル：${r.lanLength}m
 配線支持材　：${r.wireSupport || '未記入'}
 
-【作業計画】
-作業人数　：${r.workerCount}名
-予想時間　：${r.workHours}時間
-${r.kosoLine}
+${buildWorkPlanText(r)}
 
 【備考】
 ${r.tokuLine}
@@ -1941,8 +2071,7 @@ function generateReport() {
     wiring:       d.wiring || '未選択',
     lanLength:    document.getElementById('lanLength').value,
     wireSupport:  document.getElementById('wireSupport').value,
-    workerCount:  document.getElementById('workerCount').value,
-    workHours:    document.getElementById('workHours').value,
+    workPlan:     JSON.parse(JSON.stringify(d.workPlan||{})),
     kosoLine, tokuLine
   };
 
@@ -2148,7 +2277,7 @@ function downloadModal() {
 // リセット・タブ
 // ══════════════════════════════════════
 function resetAll() {
-  d = { systemCount:1, cameraCounts:{}, armData:{},
+  d = { systemCount:1, cameraCounts:{}, armData:{}, workPlan:{},
         dateData:{ single:{mode:'confirm'}, install:{mode:'confirm'}, remove:{mode:'confirm'} } };
   kosoMode = null; tokuMode = null; step = 1; currentReport = null;
   document.getElementById('stepsContainer').style.display = 'block';
